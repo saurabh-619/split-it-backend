@@ -17,6 +17,17 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "paths": {
+      "@common/*": ["src/common/*"],
+      "@user/*": ["src/user/*"],
+      "@wallet/*": ["src/wallet/*"],
+      "@money-request/*": ["src/money-request/*"],
+      "@friend-request/*": ["src/friend-request/*"],
+      "@item/*": ["src/item/*"],
+      "@bill/*": ["src/bill/*"],
+      "@bill-item/*": ["src/bill-item/*"],
+      "@transaction/*": ["src/transaction/*"]
+    }
   }
 }
