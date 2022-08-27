@@ -8,6 +8,9 @@ import {
   loggerOptions,
 } from '@config';
 import {
+  ValidationModule,
+  HttpModule,
+  JwtModule,
   UserModule,
   BillModule,
   FriendRequestModule,
@@ -17,11 +20,13 @@ import {
   WalletModule,
 } from '@modules';
 import { __prod__ } from '@utils';
+
 @Module({
   imports: [
     ConfigModule.forRoot(configModuleOptions),
     TypeOrmModule.forRootAsync(typeOrmAsyncOptions),
     LoggerModule.forRoot(loggerOptions),
+    JwtModule.forRoot({ secretKey: process.env.JWT_SECRET_KEY }),
     UserModule,
     WalletModule,
     MoneyRequestModule,
@@ -29,6 +34,8 @@ import { __prod__ } from '@utils';
     ItemModule,
     BillModule,
     TransactionModule,
+    ValidationModule,
+    HttpModule,
   ],
 })
 export class AppModule {}

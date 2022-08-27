@@ -1,40 +1,32 @@
 import { CoreEntity } from '@common';
 import { Wallet } from '@wallet';
-import { IsEmail, IsString } from 'class-validator';
-import { Column, Entity, JoinTable, OneToOne, RelationId } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, RelationId } from 'typeorm';
 
 @Entity('user')
 export class User extends CoreEntity {
-  @Column()
-  @IsString()
+  @Column({ unique: true })
   username: string;
 
   @Column()
-  @IsString()
   firstName: string;
 
   @Column()
-  @IsString()
   lastName: string;
 
-  @Column()
-  @IsString()
+  @Column({ unique: true })
   email: string;
 
   @Column()
-  @IsEmail()
   avatar: string;
 
   @Column()
-  @IsString()
   passwordHash: string;
 
   @Column()
-  @IsString()
   salt: string;
 
   @OneToOne(() => Wallet)
-  @JoinTable()
+  @JoinColumn()
   wallet: Wallet;
 
   @RelationId((user: User) => user.wallet)

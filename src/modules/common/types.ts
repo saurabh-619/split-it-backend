@@ -16,3 +16,9 @@ export enum TransactionType {
   SPLIT = 'split',
   WALLET = 'wallet',
 }
+
+export type JwtPayload = {
+  id: number;
+  email: string;
+  username: string;
+};

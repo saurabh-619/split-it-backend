@@ -18,7 +18,8 @@ export const typeOrmAsyncOptions: TypeOrmModuleAsyncOptions = {
     database: configService.get('DB_NAME'),
     logging: !__prod__,
     synchronize: true,
-    entities: [__dirname + '/../**/*.entity.{ts,js}'],
+    entities: [__dirname + '/../modules/**/*.entity.{ts,js}'],
+    migrations: [__dirname + '/../migrations/*.{ts,js}'],
   }),
   inject: [ConfigService],
 };
