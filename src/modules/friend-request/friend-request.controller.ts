@@ -27,6 +27,11 @@ export class FriendRequestController {
     return this.friendRequestService.getPendingRequests(user);
   }
 
+  @Get('/friends')
+  async getFriends(@AuthUser() user: User): Promise<GetPendingRequestsOuput> {
+    return this.friendRequestService.getFriends(user);
+  }
+
   @Post()
   async sendFriendRequest(
     @AuthUser() requester: User,

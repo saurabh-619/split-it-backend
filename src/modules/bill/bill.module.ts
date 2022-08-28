@@ -1,4 +1,4 @@
-import { Bill } from 'src/modules/bill/entities/bill.entity';
+import { Bill } from './entities/bill.entity';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 

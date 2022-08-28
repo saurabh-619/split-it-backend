@@ -5,6 +5,7 @@ import { User, UserService } from '@user';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
 import { AcknowledgeFriendRequestOutput } from './dtos/acknowledge-friend-request.dto';
+import { GetFriendsOutput } from './dtos/get-friends.dto';
 import { GetPendingRequestsOuput } from './dtos/get-pending-requests';
 import { FriendRequest } from './entities/friend-request.entity';
 
@@ -130,6 +131,53 @@ export class FriendRequestService {
         ok: false,
         status: 500,
         error: "couldn't send the friend request",
+      };
+    }
+  }
+
+  async getFriends(user: User): Promise<GetFriendsOutput> {
+    try {
+      const requesteeFriendRequests = await this.friendRequestRepo
+        .createQueryBuilder('fr')
+        .leftJoinAndSelect('fr.requester', 'requester')
+        .leftJoinAndSelect('fr.requestee', 'requestee')
+        .where('fr.requestee.id = :id', {
+          id: user.id,
+        })
+        .andWhere('fr.status = :status', {
+          status: FriendRequestStatus.ACCEPTED,
+        })
+        .getMany();
+
+      const requesterFriendRequsts = await this.friendRequestRepo
+        .createQueryBuilder('fr')
+        .leftJoinAndSelect('fr.requester', 'requester')
+        .leftJoinAndSelect('fr.requestee', 'requestee')
+        .where('fr.requester.id = :id', {
+          id: user.id,
+        })
+        .andWhere('fr.status = :status', {
+          status: FriendRequestStatus.ACCEPTED,
+        })
+        .getMany();
+
+      const friends = [
+        ...requesteeFriendRequests.map((request) => request.requester),
+        ...requesterFriendRequsts.map((request) => request.requestee),
+      ];
+
+      return {
+        ok: true,
+        status: 200,
+        count: friends.length ?? 0,
+        friends,
+      };
+    } catch (e) {
+      this.logger.error(e.message);
+      return {
+        ok: false,
+        status: 500,
+        error: "couldn't find the friends",
       };
     }
   }

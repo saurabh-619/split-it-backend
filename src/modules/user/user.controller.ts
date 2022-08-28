@@ -2,7 +2,7 @@ import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { UserService } from './user.service';
 
 import { AuthUser } from '@auth-user';
-import { User } from './entities/User.entity';
+import { User } from './entities/user.entity';
 import { UpdateUserDto, UpdateUserOutput } from './dtos/update-user.dto';
 
 @Controller('user')
