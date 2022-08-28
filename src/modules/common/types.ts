@@ -6,8 +6,9 @@ export enum MoneyRequestStatus {
 }
 
 export enum FriendRequestStatus {
+  SEEN = 'seen',
   PENDING = 'pending',
-  ACCEPTED = 'accepted ',
+  ACCEPTED = 'accepted',
   REJECTED = 'rejected',
 }
 

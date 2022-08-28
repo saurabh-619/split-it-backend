@@ -3,8 +3,9 @@ import { FriendRequestStatus } from '@common';
 import { MoneyRequest } from '@money-request';
 import { User } from '@user';
 import { IsEnum } from 'class-validator';
-import { Column, ManyToOne, RelationId } from 'typeorm';
+import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
 
+@Entity('friend_request')
 export class FriendRequest extends CoreEntity {
   @Column({
     enumName: 'friend_request_status',
@@ -14,10 +15,10 @@ export class FriendRequest extends CoreEntity {
   @IsEnum(FriendRequestStatus)
   status: FriendRequestStatus;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   requester: User;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   requestee: User;
 
   @RelationId((moneyRequest: MoneyRequest) => moneyRequest.requester)
