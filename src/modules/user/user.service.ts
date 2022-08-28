@@ -1,153 +1,111 @@
-import { LoginDto, LoginOutput } from './dtos/login.dto';
+import { pickBy } from 'lodash';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PinoLogger } from 'nestjs-pino';
-import { Repository } from 'typeorm';
-import { RegisterDto, RegisterOutput } from './dtos/register.dto';
+import { InsertResult, Repository } from 'typeorm';
+import { UpdateUserDto, UpdateUserOutput } from './dtos/update-user.dto';
 import { User } from './entities/User.entity';
-
-import { HttpService } from '@http';
-import { ValidationService } from '@validation';
-import { JwtService } from '@jwt';
-import { WalletService } from '@wallet';
 
 @Injectable()
 export class UserService {
   constructor(
-    private readonly logger: PinoLogger,
-    private readonly validationService: ValidationService,
-    private readonly jwtService: JwtService,
-    private readonly httpService: HttpService,
-    private readonly walletService: WalletService,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<RegisterOutput> {
-    const { email, firstName, lastName, password, username } = registerDto;
-    try {
-      // check if user already exists
-      const user = await this.userRepo.findOne({
-        where: {
-          email: registerDto.email,
-        },
-      });
-
-      if (user !== null) {
-        return {
-          ok: false,
-          status: 400,
-          error: 'user with the given info already exists',
-        };
-      }
-
-      // create salt and password hash
-      const salt = await this.validationService.generateSalt();
-      const passwordHash = await this.validationService.generatePasswordHash(
-        salt,
-        password,
-      );
-
-      // create wallet and user
-      const {
-        ok,
-        error: createWalletError,
-        wallet,
-      } = await this.walletService.createWallet(username);
-
-      if (!ok) {
-        throw new Error(createWalletError);
-      }
-
-      // get avatar
-      const { avatar } = await this.httpService.getRandomAvatar();
-
-      const newUser = this.userRepo.create({
-        email,
-        firstName,
-        lastName,
-        username,
-        wallet,
-        passwordHash,
-        salt,
-        avatar,
-      });
-
-      const result = await this.userRepo.insert(newUser);
-
-      // generate token
-      const token = this.jwtService.sign({
-        id: result.identifiers[0].id,
-        email,
-        username,
-      });
-
-      return {
-        ok: true,
-        status: 201,
-        token,
-      };
-    } catch (e) {
-      this.logger.error(e.message);
-      return {
-        ok: false,
-        status: 500,
-        error: "couldn't create user",
-      };
-    }
+  async me(): Promise<string> {
+    return 'user';
   }
 
-  async login(loginDto: LoginDto): Promise<LoginOutput> {
-    const { password, username } = loginDto;
+  async getUserById(id: number): Promise<User> {
+    return this.userRepo.findOne({
+      where: { id },
+      relations: ['wallet'],
+    });
+  }
+
+  async getUserByEmail(email: string): Promise<User> {
+    return this.userRepo.findOne({
+      where: {
+        email,
+      },
+    });
+  }
+
+  async getUserByUsername(username: string): Promise<User> {
+    return this.userRepo.findOne({
+      where: {
+        username,
+      },
+    });
+  }
+
+  async getUserByUsernameWithWallet(username: string): Promise<User> {
+    return this.userRepo.findOne({
+      where: {
+        username,
+      },
+      relations: ['wallet'],
+    });
+  }
+
+  create(user: Partial<User>): User {
+    return this.userRepo.create({
+      ...user,
+    });
+  }
+
+  async insert(user: Partial<User>): Promise<InsertResult> {
+    return this.userRepo.insert({
+      ...user,
+    });
+  }
+
+  async update(
+    user: User,
+    updates: Partial<UpdateUserDto>,
+  ): Promise<UpdateUserOutput> {
     try {
+      updates.email = updates.email === user.email ? undefined : updates.email;
+      updates.username =
+        updates.username === user.username ? undefined : updates.username;
+
+      updates = pickBy(updates, (x) => x !== undefined);
+
       // check if user already exists
-      const user = await this.userRepo.findOne({
-        where: {
-          username,
-        },
-        relations: ['wallet'],
-      });
-
-      if (user === null) {
-        return {
-          ok: false,
-          status: 400,
-          error: 'wrong credentials',
-        };
+      if (updates.email) {
+        const userByEmail = await this.getUserByEmail(updates.email);
+        if (userByEmail !== null) {
+          return {
+            ok: false,
+            status: 400,
+            error: 'user with the given email already exists',
+          };
+        }
       }
 
-      // check the password
-      const doesPasswordMatch = await this.validationService.validatePassword(
-        user.salt,
-        user.passwordHash,
-        password,
-      );
-
-      if (!doesPasswordMatch) {
-        return {
-          ok: false,
-          status: 400,
-          error: 'wrong credentials',
-        };
+      if (updates.username) {
+        const userByUsername = await this.getUserByUsername(updates.username);
+        if (userByUsername !== null) {
+          return {
+            ok: false,
+            status: 400,
+            error: 'user with the given username already exists',
+          };
+        }
       }
 
-      // generate token
-      const token = this.jwtService.sign({
-        id: user.id,
-        email: user.email,
-        username: user.username,
+      await this.userRepo.update(user.id, {
+        ...updates,
       });
 
       return {
         ok: true,
         status: 201,
-        token,
       };
     } catch (e) {
-      this.logger.error(e.message);
       return {
         ok: false,
         status: 500,
-        error: "couldn't find user",
+        error: "couldn't update the user",
       };
     }
   }

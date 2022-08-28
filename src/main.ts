@@ -1,13 +1,18 @@
 import { HttpException, HttpStatus, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { Response } from 'express';
+
+import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.enableCors();
+  app.use(helmet());
+
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
       forbidNonWhitelisted: true,
       exceptionFactory: (valError) => {
         const error =
@@ -23,6 +28,33 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.useGlobalFilters({
+    catch(exception: HttpException, host) {
+      const ctx = host.switchToHttp();
+      const response = ctx.getResponse<Response>();
+
+      const status = exception.getStatus();
+
+      if (status === 429) {
+        response.status(status).json({
+          ok: false,
+          status,
+          error: 'too many requests. wait for some time',
+        });
+      } else {
+        response.status(status).json({
+          ok: false,
+          status,
+
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          error: exception?.response?.error ?? 'internal server error',
+        });
+      }
+    },
+  });
+
   app.useLogger(app.get(Logger));
   await app.listen(3000);
 }

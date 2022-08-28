@@ -1,6 +1,7 @@
 export { ValidationModule } from '@validation';
 export { HttpModule } from '@http';
 export { JwtModule } from '@jwt';
+export { AuthModule } from '@auth';
 export { UserModule } from '@user';
 export { BillModule } from '@bill';
 export { FriendRequestModule } from '@friend-request';

@@ -1,32 +1,37 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { LoggerModule } from 'nestjs-pino';
 import {
   configModuleOptions,
-  typeOrmAsyncOptions,
+  jwtOptions,
   loggerOptions,
+  throllerOptions,
+  typeOrmAsyncOptions,
 } from '@config';
 import {
-  ValidationModule,
-  HttpModule,
-  JwtModule,
-  UserModule,
+  AuthModule,
   BillModule,
   FriendRequestModule,
+  HttpModule,
   ItemModule,
+  JwtModule,
   MoneyRequestModule,
   TransactionModule,
+  UserModule,
+  ValidationModule,
   WalletModule,
 } from '@modules';
-import { __prod__ } from '@utils';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
     ConfigModule.forRoot(configModuleOptions),
     TypeOrmModule.forRootAsync(typeOrmAsyncOptions),
     LoggerModule.forRoot(loggerOptions),
-    JwtModule.forRoot({ secretKey: process.env.JWT_SECRET_KEY }),
+    ThrottlerModule.forRoot(throllerOptions),
+    JwtModule.forRoot(jwtOptions),
     UserModule,
     WalletModule,
     MoneyRequestModule,
@@ -36,6 +41,13 @@ import { __prod__ } from '@utils';
     TransactionModule,
     ValidationModule,
     HttpModule,
+    AuthModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

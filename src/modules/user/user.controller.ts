@@ -1,19 +1,24 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { LoginDto, LoginOutput } from './dtos/login.dto';
-import { RegisterDto, RegisterOutput } from './dtos/register.dto';
+import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { UserService } from './user.service';
+
+import { AuthUser } from '@auth-user';
+import { User } from './entities/User.entity';
+import { UpdateUserDto, UpdateUserOutput } from './dtos/update-user.dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('/login')
-  login(@Body() loginDto: LoginDto): Promise<LoginOutput> {
-    return this.userService.login(loginDto);
+  @Get('/')
+  me(@AuthUser() user: User): User {
+    return user;
   }
 
-  @Post('/register')
-  register(@Body() registerDto: RegisterDto): Promise<RegisterOutput> {
-    return this.userService.register(registerDto);
+  @Patch('/')
+  update(
+    @AuthUser() user: User,
+    @Body() updates: UpdateUserDto,
+  ): Promise<UpdateUserOutput> {
+    return this.userService.update(user, updates);
   }
 }
