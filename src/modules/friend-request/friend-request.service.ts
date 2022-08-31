@@ -20,12 +20,12 @@ export class FriendRequestService {
 
   async getPendingRequests(user: User): Promise<GetPendingRequestsOuput> {
     try {
-      console.log({ user });
       const friendRequests = await this.friendRequestRepo.findAndCount({
         where: {
           requestee: {
             id: user.id,
           },
+          status: FriendRequestStatus.PENDING,
         },
         relations: ['requester', 'requestee'],
       });
@@ -91,7 +91,7 @@ export class FriendRequestService {
     }
   }
 
-  async acceptFriendRequest(
+  async changeFriendRequestStatus(
     user: User,
     requestId: number,
     status: FriendRequestStatus,
@@ -107,12 +107,59 @@ export class FriendRequestService {
         };
       }
 
-      // check if user is requestee
-      if (user.id !== request.requesteeId) {
+      // check if valid request
+      // 1. pending requests can only be accepted | rejected | seen
+      // 2. accepted or rejected requests can only beunfriend
+      // 3. accepted request cant be rejected and vice versa
+      // 4. unfriended requests cant be accepted | rejected | seen | pending
+      if (
+        // 1
+        (request.status === FriendRequestStatus.PENDING &&
+          status === FriendRequestStatus.UNFRIENDED) ||
+        // 2
+        ([FriendRequestStatus.ACCEPTED, FriendRequestStatus.REJECTED].includes(
+          request.status,
+        ) &&
+          [FriendRequestStatus.PENDING, FriendRequestStatus.SEEN].includes(
+            status,
+          )) ||
+        // 3
+        (request.status === FriendRequestStatus.ACCEPTED &&
+          status === FriendRequestStatus.REJECTED) ||
+        (request.status === FriendRequestStatus.REJECTED &&
+          status === FriendRequestStatus.ACCEPTED) ||
+        request.status === FriendRequestStatus.UNFRIENDED
+      ) {
+        console.log({
+          error: `not valid request to proceed {${request.status}}:{${status}}`,
+        });
         return {
           ok: false,
           status: 400,
-          error: 'authenticated user not allowed to proceed the request',
+          error: 'not valid request to proceed',
+        };
+      }
+
+      // check if user is allowed to proceed
+      // 1. status to be changed to = "ACCEPTED"|"REJECTED"|"SEEN" => requestee.id === user.id (only requestee can accept or reject or seen the pending request)
+      // 2. status to be changed to = "UNFRIENDED" => requestee.id === user.id || requester.id === user.id  (requestee or requester can unfriend the accepted request)
+
+      if (
+        // 1
+        ([
+          FriendRequestStatus.ACCEPTED,
+          FriendRequestStatus.REJECTED,
+          FriendRequestStatus.SEEN,
+        ].includes(status) &&
+          user.id !== request.requesteeId) ||
+        // 2
+        (status === FriendRequestStatus.UNFRIENDED &&
+          ![request.requesteeId, request.requesterId].includes(user.id))
+      ) {
+        return {
+          ok: false,
+          status: 400,
+          error: 'current user not allowed to proceed the request',
         };
       }
 
@@ -137,34 +184,24 @@ export class FriendRequestService {
 
   async getFriends(user: User): Promise<GetFriendsOutput> {
     try {
-      const requesteeFriendRequests = await this.friendRequestRepo
+      const friendRequests = await this.friendRequestRepo
         .createQueryBuilder('fr')
         .leftJoinAndSelect('fr.requester', 'requester')
         .leftJoinAndSelect('fr.requestee', 'requestee')
         .where('fr.requestee.id = :id', {
           id: user.id,
         })
+        .orWhere('fr.requester.id = :id', { id: user.id })
         .andWhere('fr.status = :status', {
           status: FriendRequestStatus.ACCEPTED,
         })
         .getMany();
 
-      const requesterFriendRequsts = await this.friendRequestRepo
-        .createQueryBuilder('fr')
-        .leftJoinAndSelect('fr.requester', 'requester')
-        .leftJoinAndSelect('fr.requestee', 'requestee')
-        .where('fr.requester.id = :id', {
-          id: user.id,
-        })
-        .andWhere('fr.status = :status', {
-          status: FriendRequestStatus.ACCEPTED,
-        })
-        .getMany();
-
-      const friends = [
-        ...requesteeFriendRequests.map((request) => request.requester),
-        ...requesterFriendRequsts.map((request) => request.requestee),
-      ];
+      const friends = friendRequests.map((request) =>
+        request.requester.id === user.id
+          ? request.requestee
+          : request.requester,
+      );
 
       return {
         ok: true,

@@ -49,11 +49,11 @@ export class FriendRequestController {
   }
 
   @Patch()
-  async acknowledgeFriendRequest(
+  async changeFriendRequestStatus(
     @AuthUser() user: User,
     @Body() { requestId, status }: AcknowledgeFriendRequestDto,
   ): Promise<AcknowledgeFriendRequestOutput> {
-    return this.friendRequestService.acceptFriendRequest(
+    return this.friendRequestService.changeFriendRequestStatus(
       user,
       requestId,
       status,

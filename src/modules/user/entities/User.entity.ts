@@ -19,10 +19,10 @@ export class User extends CoreEntity {
   @Column()
   avatar: string;
 
-  @Column()
+  @Column({ select: false })
   passwordHash: string;
 
-  @Column()
+  @Column({ select: false })
   salt: string;
 
   @OneToOne(() => Wallet)
