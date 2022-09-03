@@ -9,3 +9,4 @@ export { ItemModule } from '@item';
 export { MoneyRequestModule } from '@money-request';
 export { TransactionModule } from '@transaction';
 export { WalletModule } from '@wallet';
+export { BillItemModule } from '@bill-item';

@@ -1,6 +1,14 @@
+import { Bill } from '@bill';
 import { CoreEntity } from '@common';
 import { Wallet } from '@wallet';
-import { Column, Entity, JoinColumn, OneToOne, RelationId } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  RelationId,
+} from 'typeorm';
 
 @Entity('user')
 export class User extends CoreEntity {
@@ -24,6 +32,9 @@ export class User extends CoreEntity {
 
   @Column({ select: false })
   salt: string;
+
+  @OneToMany(() => Bill, (bill: Bill) => bill.leader)
+  leaderBills: Bill[];
 
   @OneToOne(() => Wallet)
   @JoinColumn()

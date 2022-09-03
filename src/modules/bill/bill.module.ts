@@ -1,8 +1,19 @@
+import { TransactionModule } from '@transaction';
 import { Bill } from './entities/bill.entity';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BillService } from './bill.service';
+import { BillController } from './bill.controller';
+import { UserModule } from '@user';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Bill])],
+  imports: [
+    TypeOrmModule.forFeature([Bill]),
+    forwardRef(() => UserModule),
+    TransactionModule,
+  ],
+  providers: [BillService],
+  controllers: [BillController],
+  exports: [BillService],
 })
 export class BillModule {}

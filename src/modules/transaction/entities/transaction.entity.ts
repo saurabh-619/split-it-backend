@@ -1,14 +1,12 @@
-import { User } from '@user';
+import { CoreEntity, TransactionType } from '@common';
 import { MoneyRequest } from '@money-request';
+import { User } from '@user';
 import { Bill } from 'src/modules/bill/entities/bill.entity';
-import { CoreEntity } from '@common';
-import { TransactionType } from '@common';
-import { IsBoolean, IsEnum, IsNumber } from 'class-validator';
-import { Column, ManyToOne, OneToOne, RelationId } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToOne, RelationId } from 'typeorm';
 
+@Entity('transaction')
 export class Transaction extends CoreEntity {
   @Column({ type: 'double precision', default: 0 })
-  @IsNumber()
   amount: number;
 
   @Column({
@@ -16,23 +14,21 @@ export class Transaction extends CoreEntity {
     enum: TransactionType,
     default: TransactionType.SPLIT,
   })
-  @IsEnum(TransactionType)
   type: TransactionType;
 
-  @ManyToOne(() => Bill, { nullable: true })
+  @ManyToOne(() => Bill, { nullable: true, onDelete: 'CASCADE' })
   bill?: Bill;
 
-  @OneToOne(() => MoneyRequest, { nullable: true })
+  @OneToOne(() => MoneyRequest, { nullable: true, onDelete: 'CASCADE' })
   moneyRequest?: MoneyRequest;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   from: User;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   to: User;
 
   @Column({ default: false })
-  @IsBoolean()
   isComplete: boolean;
 
   @RelationId((transaction: Transaction) => transaction.bill)

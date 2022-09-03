@@ -34,7 +34,10 @@ async function bootstrap() {
       const ctx = host.switchToHttp();
       const response = ctx.getResponse<Response>();
 
-      const status = exception.getStatus();
+      const status =
+        exception && typeof exception.getStatus === 'function'
+          ? exception.getStatus()
+          : 500;
 
       if (status === 429) {
         response.status(status).json({

@@ -1,47 +1,63 @@
 import { CoreEntity } from '@common';
 import { User } from '@user';
-import { IsString, IsNumber, IsBoolean } from 'class-validator';
 import { BillItem } from '@bill-item';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  RelationId,
+} from 'typeorm';
 
 @Entity('bill')
 export class Bill extends CoreEntity {
   @Column()
-  @IsString()
   title: string;
 
-  @Column()
-  @IsString()
-  description: string;
+  @Column({ nullable: true })
+  description?: string;
 
-  @ManyToMany(() => User)
+  @ManyToOne(() => User, (user: User) => user.leaderBills, {
+    onDelete: 'SET NULL',
+  })
+  leader: User;
+
+  @ManyToMany(() => User, { nullable: true })
   @JoinTable()
-  friends: User[];
+  friends?: User[];
 
-  @OneToMany(() => BillItem, (billItem) => billItem.bill)
-  billItems: BillItem[];
+  @OneToMany(() => BillItem, (billItem) => billItem.bill, { nullable: true })
+  billItems?: BillItem[];
 
   @Column({ type: 'double precision', default: 0 })
-  @IsNumber()
   total: number;
 
   @Column({ type: 'double precision', default: 0 })
-  @IsNumber()
+  totalWithoutTax: number;
+
+  @Column({ type: 'double precision', default: 0 })
   tax: number;
 
   @Column({ type: 'double precision', default: 0 })
-  @IsNumber()
   paidAmount: number;
 
   @Column({ type: 'double precision', default: 0.0 })
-  @IsNumber()
   fractionPaid: number;
 
   @Column({ default: false })
-  @IsBoolean()
   isPaid: boolean;
 
-  @Column()
-  @IsString()
-  image: string;
+  @Column({ nullable: true })
+  image?: string;
+
+  @RelationId((bill: Bill) => bill.leader)
+  leaderId: number;
+
+  @RelationId((bill: Bill) => bill.friends)
+  friendsIds: number[];
+
+  @RelationId((bill: Bill) => bill.billItems)
+  billItemIds: number[];
 }
