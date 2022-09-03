@@ -1,4 +1,3 @@
-export * from './user.controller';
-export * from './entities/User.entity';
 export * from './user.module';
+export * from './entities/user.entity';
 export * from './user.service';

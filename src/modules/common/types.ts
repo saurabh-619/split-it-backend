@@ -6,9 +6,11 @@ export enum MoneyRequestStatus {
 }
 
 export enum FriendRequestStatus {
+  SEEN = 'seen',
   PENDING = 'pending',
-  ACCEPTED = 'accepted ',
+  ACCEPTED = 'accepted',
   REJECTED = 'rejected',
+  UNFRIENDED = 'unfriended',
 }
 
 export enum TransactionType {
@@ -16,3 +18,9 @@ export enum TransactionType {
   SPLIT = 'split',
   WALLET = 'wallet',
 }
+
+export type JwtPayload = {
+  id: number;
+  email: string;
+  username: string;
+};

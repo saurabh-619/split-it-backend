@@ -1,0 +1,1 @@
+export const JWT_PROVIDER_TOKEN = 'JWT_PROVIDER_TOKEN';
