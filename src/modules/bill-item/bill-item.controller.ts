@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { BillItemService } from './bill-item.service';
-import { SaveBillItemDto, SaveBillItemOutput } from './dtos/save-bill-item.dto';
+import { AddBillItemDto, AddBillItemOutput } from './dtos/add-bill-item.dto';
+import { RemoveBillItemDto } from './dtos/remove-bill-item.dto';
 
 @Controller('bill-item')
 export class BillItemController {
@@ -11,10 +12,17 @@ export class BillItemController {
     return 'hello';
   }
 
-  @Post()
-  saveBillItem(
-    @Body() billItemInput: SaveBillItemDto,
-  ): Promise<SaveBillItemOutput> {
-    return this.billItemService.saveBillItem(billItemInput);
+  @Patch()
+  addBillItem(
+    @Body() addBillItemDto: AddBillItemDto,
+  ): Promise<AddBillItemOutput> {
+    return this.billItemService.addBillItem(addBillItemDto);
+  }
+
+  @Patch('/remove')
+  removeBillItem(
+    @Body() removeBillItemDto: RemoveBillItemDto,
+  ): Promise<AddBillItemOutput> {
+    return this.billItemService.removeBillItem(removeBillItemDto);
   }
 }

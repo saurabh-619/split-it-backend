@@ -3,10 +3,14 @@ import { BillService } from '@bill';
 import { ItemService } from '@item';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { SaveBillItemDto, SaveBillItemOutput } from './dtos/save-bill-item.dto';
+import { DeleteResult, Repository } from 'typeorm';
+import { AddBillItemDto, AddBillItemOutput } from './dtos/add-bill-item.dto';
 import { BillItem } from './entities/bill-item.entity';
 import { PinoLogger } from 'nestjs-pino';
+import {
+  RemoveBillItemDto,
+  RemoveBillItemOutput,
+} from './dtos/remove-bill-item.dto';
 
 @Injectable()
 export class BillItemService {
@@ -21,7 +25,20 @@ export class BillItemService {
     private readonly itemService: ItemService,
   ) {}
 
-  async saveBillItem({
+  async getById(id: number): Promise<BillItem> {
+    return this.billItemRepo.findOne({
+      where: {
+        id,
+      },
+      relations: ['item'],
+    });
+  }
+
+  async delete(id: number): Promise<DeleteResult> {
+    return this.billItemRepo.delete(id);
+  }
+
+  async addBillItem({
     billId,
     name,
     description,
@@ -29,7 +46,7 @@ export class BillItemService {
     price,
     friendIds,
     quantity,
-  }: SaveBillItemDto): Promise<SaveBillItemOutput> {
+  }: AddBillItemDto): Promise<AddBillItemOutput> {
     try {
       const bill = await this.billService.getById(billId);
 
@@ -76,6 +93,7 @@ export class BillItemService {
 
       // change total of the bill
       bill.total += quantity * price;
+      bill.totalWithoutTax += quantity * price;
 
       if (bill.billItems?.length !== 0) {
         bill.billItems = [...bill.billItems, billItem];
@@ -98,6 +116,67 @@ export class BillItemService {
         ok: false,
         status: 500,
         error: "couldn't add a bill item",
+      };
+    }
+  }
+
+  async removeBillItem({
+    billId,
+    billItemId,
+  }: RemoveBillItemDto): Promise<RemoveBillItemOutput> {
+    try {
+      const bill = await this.billService.getById(billId);
+
+      if (bill === null) {
+        return {
+          ok: false,
+          status: 500,
+          error: "couldn't find the bill",
+        };
+      }
+
+      const billItem = await this.getById(billItemId);
+
+      if (billItem === null) {
+        return {
+          ok: false,
+          status: 400,
+          error: "bill item doesn't exists anymore",
+        };
+      }
+
+      if (bill.billItems) {
+        bill.billItems = bill.billItems.filter((x) => x.id !== billItemId);
+      }
+
+      // change total of the bill
+      bill.total -= billItem.quantity * billItem.item.price;
+      bill.totalWithoutTax -= billItem.quantity * billItem.item.price;
+
+      const billResult = await this.billService.save(bill);
+
+      const deleteResult = await this.delete(billItemId);
+
+      if (deleteResult.affected === 0) {
+        return {
+          ok: false,
+          status: 400,
+          error: "bill item couldn't be deleted",
+        };
+      }
+
+      return {
+        ok: false,
+        status: 201,
+        billId: billResult.id,
+      };
+    } catch (e) {
+      console.log({ e });
+      this.logger.error(e.message);
+      return {
+        ok: false,
+        status: 500,
+        error: "couldn't remove a bill item",
       };
     }
   }

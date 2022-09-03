@@ -1,20 +1,27 @@
 import { CoreOutput } from '@common';
-import { ArrayNotEmpty, IsArray, IsNumber, IsOptional } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+} from 'class-validator';
 import { IFriendSplit } from '../interfaces/friend-split.interface';
 
 export class GenerateBillDto {
   @IsNumber()
   billId: number;
 
-  @IsArray({ message: 'need array of bill item ids' })
-  @ArrayNotEmpty({ message: 'need to add atleast a bill item.' })
-  @IsNumber(undefined, { each: true, message: 'invalid friend ids' })
-  billItemIds: number[];
-
   @IsOptional()
   @IsNumber()
   tax: number;
 
+  @IsOptional()
+  @IsBoolean()
+  isPaid: boolean;
+
+  @IsArray()
+  @ArrayNotEmpty({ message: 'need atleast a split' })
   splits: IFriendSplit[];
 }
 

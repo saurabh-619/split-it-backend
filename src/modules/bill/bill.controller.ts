@@ -13,6 +13,7 @@ import { BillService } from './bill.service';
 import { InsertBillDto, InsertBillOuput } from './dtos/insert-bill.dto';
 import { AddFriendsDto } from './dtos/add-friends.dto';
 import { GetEntireByIdOutput } from './dtos/get-entire-by-id.dto';
+import { GenerateBillDto, GenerateBillOutput } from './dtos/generate-bill.dto';
 
 @Controller('bill')
 export class BillController {
@@ -39,5 +40,12 @@ export class BillController {
     @Body() addFriendsDto: AddFriendsDto,
   ): Promise<InsertBillOuput> {
     return this.billService.addFriends(user, addFriendsDto);
+  }
+  @Patch('/generate')
+  generateBill(
+    @AuthUser() user: User,
+    @Body() generateFriendsDto: GenerateBillDto,
+  ): Promise<GenerateBillOutput> {
+    return this.billService.generateBill(user, generateFriendsDto);
   }
 }

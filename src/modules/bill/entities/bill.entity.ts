@@ -8,6 +8,7 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
+  RelationId,
 } from 'typeorm';
 
 @Entity('bill')
@@ -34,6 +35,9 @@ export class Bill extends CoreEntity {
   total: number;
 
   @Column({ type: 'double precision', default: 0 })
+  totalWithoutTax: number;
+
+  @Column({ type: 'double precision', default: 0 })
   tax: number;
 
   @Column({ type: 'double precision', default: 0 })
@@ -47,4 +51,13 @@ export class Bill extends CoreEntity {
 
   @Column({ nullable: true })
   image?: string;
+
+  @RelationId((bill: Bill) => bill.leader)
+  leaderId: number;
+
+  @RelationId((bill: Bill) => bill.friends)
+  friendsIds: number[];
+
+  @RelationId((bill: Bill) => bill.billItems)
+  billItemIds: number[];
 }
