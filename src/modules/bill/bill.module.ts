@@ -1,10 +1,10 @@
-import { TransactionModule } from '@transaction';
-import { Bill } from './entities/bill.entity';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BillService } from './bill.service';
-import { BillController } from './bill.controller';
+import { TransactionModule } from '@transaction';
 import { UserModule } from '@user';
+import { BillController } from './bill.controller';
+import { BillService } from './bill.service';
+import { Bill } from './entities/bill.entity';
 
 @Module({
   imports: [
