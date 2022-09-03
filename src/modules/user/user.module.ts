@@ -1,12 +1,13 @@
-import { User } from '@user';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { UserService } from './user.service';
+import { User } from './entities/user.entity';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ValidationModule } from '@validation';
 import { HttpModule } from '@http';
 import { WalletModule } from '@wallet';
 import { AuthMiddleware } from '@auth';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),

@@ -17,6 +17,7 @@ import {
   UserModule,
   ValidationModule,
   WalletModule,
+  BillItemModule,
 } from '@modules';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -42,6 +43,7 @@ import { LoggerModule } from 'nestjs-pino';
     ValidationModule,
     HttpModule,
     AuthModule,
+    BillItemModule,
   ],
   providers: [
     {

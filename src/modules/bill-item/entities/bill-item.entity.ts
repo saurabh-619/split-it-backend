@@ -1,23 +1,34 @@
 import { CoreEntity } from '@common';
 import { Item } from '@item';
-import { IsNumber } from 'class-validator';
+import { User } from '@user';
 import { Bill } from 'src/modules/bill/entities/bill.entity';
-import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  RelationId,
+} from 'typeorm';
 
 @Entity('bill_item')
 export class BillItem extends CoreEntity {
-  @ManyToOne(() => Item)
+  @ManyToOne(() => Item, { onDelete: 'SET NULL' })
   item: Item;
 
-  @ManyToOne(() => Bill)
+  @ManyToOne(() => Bill, (bill: Bill) => bill.billItems, {
+    onDelete: 'CASCADE',
+  })
   bill: Bill;
 
+  @ManyToMany(() => User, { nullable: true })
+  @JoinTable()
+  friends?: User[];
+
   @Column({ default: 1 })
-  @IsNumber()
   quantity: number;
 
   @Column({ type: 'double precision' })
-  @IsNumber()
   total: number;
 
   @RelationId((billItem: BillItem) => billItem.bill)

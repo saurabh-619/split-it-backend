@@ -1,7 +1,7 @@
 import { pickBy } from 'lodash';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { InsertResult, Repository } from 'typeorm';
+import { In, InsertResult, Repository } from 'typeorm';
 import { UpdateUserDto, UpdateUserOutput } from './dtos/update-user.dto';
 import { User } from './entities/user.entity';
 
@@ -18,6 +18,13 @@ export class UserService {
   async getUserById(id: number): Promise<User> {
     return this.userRepo.findOne({
       where: { id },
+      relations: ['wallet'],
+    });
+  }
+
+  async getUsersByIds(ids: number[]): Promise<User[]> {
+    return this.userRepo.find({
+      where: { id: In(ids) },
       relations: ['wallet'],
     });
   }
