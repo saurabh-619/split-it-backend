@@ -9,6 +9,10 @@ import { GenerateBillDto, GenerateBillOutput } from './dtos/generate-bill.dto';
 import { GetEntireByIdOutput } from './dtos/get-entire-by-id.dto';
 import { InsertBillDto, InsertBillOuput } from './dtos/insert-bill.dto';
 import { Bill } from './entities/bill.entity';
+import {
+  PayTheSplitDto,
+  PayTheSplitOutput,
+} from './interfaces/pay-the-split.dto';
 
 @Injectable()
 export class BillService {
@@ -148,11 +152,9 @@ export class BillService {
 
   async generateBill(
     user: User,
-    { billId, tax, isPaid, splits }: GenerateBillDto,
+    { billId, tax, isPaid, splits, isEqualSplit }: GenerateBillDto,
   ): Promise<GenerateBillOutput> {
     try {
-      console.log({ billId, tax, isPaid, splits });
-
       const bill = await this.getById(billId);
 
       if (bill === null) {
@@ -174,18 +176,25 @@ export class BillService {
       bill.tax = tax ?? bill.tax;
       bill.isPaid = isPaid ?? bill.isPaid;
       bill.total += tax ?? 0;
+
+      // calculate the split if isEqualSplit
+      const split = Math.round(bill.total / splits.length);
+
       if (isPaid) {
-        bill.fractionPaid = 1.0;
+        bill.fractionPaid = '1.0';
         bill.paidAmount = bill.total;
+      } else {
+        bill.paidAmount = split;
+        bill.fractionPaid = (bill.paidAmount / bill.total).toFixed(4);
       }
 
       // create transactions for splits
       for (const splitIns of splits) {
         const splitUser = await this.userService.getUserById(splitIns.friendId);
         await this.transactionService.insert({
-          amount: splitIns.split,
+          amount: isEqualSplit === true ? split : splitIns.split,
           bill,
-          isComplete: isPaid ?? false,
+          isComplete: isPaid ?? bill.leader.id === user.id,
           to: bill.leader,
           from: splitUser,
         });
@@ -210,6 +219,68 @@ export class BillService {
         ok: false,
         status: 500,
         error: "couldn't generate the bill",
+      };
+    }
+  }
+
+  async payTheSplit(
+    user: User,
+    { billId, transactionId }: PayTheSplitDto,
+  ): Promise<PayTheSplitOutput> {
+    try {
+      const bill = await this.getById(billId);
+
+      if (bill === null) {
+        return {
+          ok: false,
+          status: 400,
+          error: "bill doesn't exists anymore",
+        };
+      }
+
+      const transaction = await this.transactionService.getByIdWithRelations(
+        transactionId,
+      );
+
+      if (transaction === null) {
+        return {
+          ok: false,
+          status: 400,
+          error: "transaction doesn't exists anymore",
+        };
+      }
+
+      if (transaction.from.id !== user.id) {
+        return {
+          ok: false,
+          status: 400,
+          error: "current user can't complete the transaction",
+        };
+      }
+
+      transaction.isComplete = true;
+
+      await this.transactionService.save(transaction);
+
+      bill.paidAmount += transaction.amount;
+      bill.fractionPaid = (bill.paidAmount / bill.total).toFixed(4);
+
+      if (bill.paidAmount === bill.total) {
+        bill.isPaid = true;
+      }
+
+      await this.save(bill);
+
+      return {
+        ok: true,
+        status: 201,
+      };
+    } catch (e) {
+      this.logger.error(e.message);
+      return {
+        ok: false,
+        status: 500,
+        error: "couldn't pay the split",
       };
     }
   }

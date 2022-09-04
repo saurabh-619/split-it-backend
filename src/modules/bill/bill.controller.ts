@@ -1,4 +1,3 @@
-import { User } from '@user';
 import { AuthUser } from '@auth-user';
 import {
   Body,
@@ -9,11 +8,13 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { User } from '@user';
 import { BillService } from './bill.service';
-import { InsertBillDto, InsertBillOuput } from './dtos/insert-bill.dto';
 import { AddFriendsDto } from './dtos/add-friends.dto';
-import { GetEntireByIdOutput } from './dtos/get-entire-by-id.dto';
 import { GenerateBillDto, GenerateBillOutput } from './dtos/generate-bill.dto';
+import { GetEntireByIdOutput } from './dtos/get-entire-by-id.dto';
+import { InsertBillDto, InsertBillOuput } from './dtos/insert-bill.dto';
+import { PayTheSplitDto } from './interfaces/pay-the-split.dto';
 
 @Controller('bill')
 export class BillController {
@@ -41,11 +42,20 @@ export class BillController {
   ): Promise<InsertBillOuput> {
     return this.billService.addFriends(user, addFriendsDto);
   }
+
   @Patch('/generate')
   generateBill(
     @AuthUser() user: User,
     @Body() generateFriendsDto: GenerateBillDto,
   ): Promise<GenerateBillOutput> {
     return this.billService.generateBill(user, generateFriendsDto);
+  }
+
+  @Patch('/pay-the-split')
+  payTheSplit(
+    @AuthUser() user: User,
+    @Body() payTheSplitDto: PayTheSplitDto,
+  ): Promise<GenerateBillOutput> {
+    return this.billService.payTheSplit(user, payTheSplitDto);
   }
 }

@@ -26,4 +26,8 @@ export class TransactionService {
   insert(transaction: Partial<Transaction>): Promise<InsertResult> {
     return this.transactionRepo.insert(transaction);
   }
+
+  save(transaction: Partial<Transaction>): Promise<Transaction> {
+    return this.transactionRepo.save(transaction);
+  }
 }
