@@ -104,7 +104,7 @@ export class BillItemService {
       const billResult = await this.billService.save(bill);
 
       return {
-        ok: false,
+        ok: true,
         status: 201,
         billId: billResult.id,
         billItemId: billItem.id,

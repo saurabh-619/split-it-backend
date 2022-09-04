@@ -14,11 +14,15 @@ export class GenerateBillDto {
 
   @IsOptional()
   @IsNumber()
-  tax: number;
+  tax?: number;
 
   @IsOptional()
   @IsBoolean()
-  isPaid: boolean;
+  isPaid?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isEqualSplit?: boolean;
 
   @IsArray()
   @ArrayNotEmpty({ message: 'need atleast a split' })

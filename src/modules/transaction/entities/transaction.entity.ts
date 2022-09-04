@@ -2,7 +2,14 @@ import { CoreEntity, TransactionType } from '@common';
 import { MoneyRequest } from '@money-request';
 import { User } from '@user';
 import { Bill } from 'src/modules/bill/entities/bill.entity';
-import { Column, Entity, ManyToOne, OneToOne, RelationId } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  RelationId,
+} from 'typeorm';
 
 @Entity('transaction')
 export class Transaction extends CoreEntity {
@@ -20,6 +27,7 @@ export class Transaction extends CoreEntity {
   bill?: Bill;
 
   @OneToOne(() => MoneyRequest, { nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn()
   moneyRequest?: MoneyRequest;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })

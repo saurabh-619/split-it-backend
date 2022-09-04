@@ -43,8 +43,8 @@ export class Bill extends CoreEntity {
   @Column({ type: 'double precision', default: 0 })
   paidAmount: number;
 
-  @Column({ type: 'double precision', default: 0.0 })
-  fractionPaid: number;
+  @Column({ type: 'varchar', default: '0.0' })
+  fractionPaid: string;
 
   @Column({ default: false })
   isPaid: boolean;
