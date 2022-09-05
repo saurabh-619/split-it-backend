@@ -14,6 +14,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       forbidNonWhitelisted: true,
+      transform: true,
       exceptionFactory: (valError) => {
         const error =
           valError[0].constraints[Object.keys(valError[0].constraints)[0]];

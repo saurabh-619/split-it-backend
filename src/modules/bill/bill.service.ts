@@ -4,8 +4,10 @@ import { TransactionService } from '@transaction';
 import { User, UserService } from '@user';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository, UpdateResult } from 'typeorm';
+import { PaginationQueryDto } from '@common';
 import { AddFriendsDto } from './dtos/add-friends.dto';
 import { GenerateBillDto, GenerateBillOutput } from './dtos/generate-bill.dto';
+import { GetBillsOuput } from './dtos/get-bills.dto';
 import { GetEntireByIdOutput } from './dtos/get-entire-by-id.dto';
 import { InsertBillDto, InsertBillOuput } from './dtos/insert-bill.dto';
 import { Bill } from './entities/bill.entity';
@@ -63,6 +65,80 @@ export class BillService {
 
   async save(bill: Partial<Bill>): Promise<Bill> {
     return this.billRepo.save(bill);
+  }
+
+  async getBillsWhereLeader(
+    user: User,
+    { page = 1, limit }: PaginationQueryDto,
+  ): Promise<GetBillsOuput> {
+    try {
+      const skip = (page - 1) * limit || 0;
+
+      const bills = await this.billRepo.find({
+        where: {
+          leader: { id: user.id },
+        },
+        relations: ['leader', 'friends', 'billItems.friends', 'billItems.item'],
+        skip,
+        take: limit,
+        order: {
+          createdAt: 'desc',
+        },
+      });
+
+      return {
+        ok: true,
+        status: 200,
+        size: bills.length ?? 0,
+        hasLeft: bills.length === limit,
+        bills,
+      };
+    } catch (e) {
+      this.logger.error(e.message);
+      return {
+        ok: false,
+        status: 500,
+        error: "couldn't fetch the bills",
+      };
+    }
+  }
+
+  async getBillsWhereSplit(
+    user: User,
+    { page = 1, limit }: PaginationQueryDto,
+  ): Promise<GetBillsOuput> {
+    try {
+      const skip = (page - 1) * limit || 0;
+
+      const bills = await this.billRepo.find({
+        where: {
+          friends: {
+            id: user.id,
+          },
+        },
+        relations: ['leader', 'friends', 'billItems.friends', 'billItems.item'],
+        skip,
+        take: limit,
+        order: {
+          createdAt: 'desc',
+        },
+      });
+
+      return {
+        ok: true,
+        status: 200,
+        size: bills.length ?? 0,
+        hasLeft: bills.length === limit,
+        bills,
+      };
+    } catch (e) {
+      this.logger.error(e.message);
+      return {
+        ok: false,
+        status: 500,
+        error: "couldn't fetch the bills",
+      };
+    }
   }
 
   async insertBill(
