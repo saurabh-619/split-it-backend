@@ -1,4 +1,5 @@
 import { AuthUser } from '@auth-user';
+import { PaginationQueryDto } from '@common';
 import {
   Body,
   Controller,
@@ -7,11 +8,13 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { User } from '@user';
 import { BillService } from './bill.service';
 import { AddFriendsDto } from './dtos/add-friends.dto';
 import { GenerateBillDto, GenerateBillOutput } from './dtos/generate-bill.dto';
+import { GetBillsOuput } from './dtos/get-bills.dto';
 import { GetEntireByIdOutput } from './dtos/get-entire-by-id.dto';
 import { InsertBillDto, InsertBillOuput } from './dtos/insert-bill.dto';
 import { PayTheSplitDto } from './interfaces/pay-the-split.dto';
@@ -19,6 +22,22 @@ import { PayTheSplitDto } from './interfaces/pay-the-split.dto';
 @Controller('bill')
 export class BillController {
   constructor(private readonly billService: BillService) {}
+
+  @Get('/')
+  getAllBillsWhereLeader(
+    @AuthUser() user,
+    @Query() paginationParams: PaginationQueryDto,
+  ): Promise<GetBillsOuput> {
+    return this.billService.getAllBillsWhereLeader(user, paginationParams);
+  }
+
+  @Get('/split')
+  getAllBillsWhereSplit(
+    @AuthUser() user,
+    @Query() paginationParams: PaginationQueryDto,
+  ): Promise<GetBillsOuput> {
+    return this.billService.getAllBillsWhereSplit(user, paginationParams);
+  }
 
   @Get('/:id')
   getEntireBill(
