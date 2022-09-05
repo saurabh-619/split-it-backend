@@ -1,14 +1,16 @@
 import { Type } from 'class-transformer';
-import { IsNumber } from 'class-validator';
+import { IsNumber, IsOptional } from 'class-validator';
 import { CoreOutput } from './output.dto';
 
 export class PaginationQueryDto {
-  @Type(() => Number)
+  @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   page?: number;
 
-  @Type(() => Number)
+  @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   limit?: number;
 }
 
