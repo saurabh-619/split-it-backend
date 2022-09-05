@@ -67,7 +67,7 @@ export class BillService {
     return this.billRepo.save(bill);
   }
 
-  async getAllBillsWhereLeader(
+  async getBillsWhereLeader(
     user: User,
     { page = 1, limit }: PaginationQueryDto,
   ): Promise<GetBillsOuput> {
@@ -103,7 +103,7 @@ export class BillService {
     }
   }
 
-  async getAllBillsWhereSplit(
+  async getBillsWhereSplit(
     user: User,
     { page = 1, limit }: PaginationQueryDto,
   ): Promise<GetBillsOuput> {

@@ -24,19 +24,19 @@ export class BillController {
   constructor(private readonly billService: BillService) {}
 
   @Get('/')
-  getAllBillsWhereLeader(
-    @AuthUser() user,
+  getBillsWhereLeader(
+    @AuthUser() user: User,
     @Query() paginationParams: PaginationQueryDto,
   ): Promise<GetBillsOuput> {
-    return this.billService.getAllBillsWhereLeader(user, paginationParams);
+    return this.billService.getBillsWhereLeader(user, paginationParams);
   }
 
   @Get('/split')
-  getAllBillsWhereSplit(
-    @AuthUser() user,
+  getBillsWhereSplit(
+    @AuthUser() user: User,
     @Query() paginationParams: PaginationQueryDto,
   ): Promise<GetBillsOuput> {
-    return this.billService.getAllBillsWhereSplit(user, paginationParams);
+    return this.billService.getBillsWhereSplit(user, paginationParams);
   }
 
   @Get('/:id')
