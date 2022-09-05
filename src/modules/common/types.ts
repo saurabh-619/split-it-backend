@@ -19,6 +19,11 @@ export enum TransactionType {
   WALLET = 'wallet',
 }
 
+export enum TransactionStatus {
+  PENDING = 'pending',
+  PAID = 'paid',
+}
+
 export type JwtPayload = {
   id: number;
   email: string;
