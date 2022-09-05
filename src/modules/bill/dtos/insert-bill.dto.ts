@@ -22,7 +22,7 @@ export class InsertBillDto {
   @IsOptional()
   @IsString()
   @MinLength(20, { message: "description can't be too short" })
-  @MaxLength(500, { message: "description can't be too long" })
+  @MaxLength(3000, { message: "description can't be too long" })
   description?: string;
 }
 
