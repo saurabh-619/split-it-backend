@@ -36,7 +36,7 @@ export class User extends CoreEntity {
   @OneToMany(() => Bill, (bill: Bill) => bill.leader)
   leaderBills: Bill[];
 
-  @OneToOne(() => Wallet)
+  @OneToOne(() => Wallet, (wallet) => wallet.owner)
   @JoinColumn()
   wallet: Wallet;
 

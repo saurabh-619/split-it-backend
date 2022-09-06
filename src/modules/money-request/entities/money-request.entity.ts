@@ -1,21 +1,16 @@
-import { CoreEntity } from '@common';
-import { MoneyRequestStatus } from '@common';
+import { CoreEntity, MoneyRequestStatus } from '@common';
 import { User } from '@user';
-import { IsEnum, IsNumber, IsString } from 'class-validator';
 import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
 
 @Entity('money_request')
 export class MoneyRequest extends CoreEntity {
-  @Column()
-  @IsString()
-  name: string;
+  @Column({ type: 'varchar' })
+  title: string;
 
-  @Column()
-  @IsString()
-  description: string;
+  @Column({ type: 'text', nullable: true })
+  description?: string;
 
   @Column({ type: 'double precision' })
-  @IsNumber()
   amount: number;
 
   @Column({
@@ -23,7 +18,6 @@ export class MoneyRequest extends CoreEntity {
     enum: MoneyRequestStatus,
     default: MoneyRequestStatus.PENDING,
   })
-  @IsEnum(MoneyRequestStatus)
   status: MoneyRequestStatus;
 
   @ManyToOne(() => User)

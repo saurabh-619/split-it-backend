@@ -51,9 +51,12 @@ async function bootstrap() {
           ok: false,
           status,
 
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          error: exception?.response?.error ?? 'internal server error',
+          error:
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            exception?.response?.error ??
+            exception.message ??
+            'internal server error',
         });
       }
     },
