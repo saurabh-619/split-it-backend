@@ -32,7 +32,7 @@ export class UpdateMoneyRequestDto {
   amount?: number;
 
   @IsOptional()
-  @IsEnum(MoneyRequestStatus)
+  @IsEnum(MoneyRequestStatus, { message: 'invalid status update request' })
   status?: MoneyRequestStatus;
 }
 

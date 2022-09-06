@@ -17,7 +17,7 @@ import {
   UpdateMoneyRequestDto,
   UpdateMoneyRequestOutput,
 } from './dtos/update-money-request.dto';
-import { pickBy } from 'lodash';
+import * as _ from 'lodash';
 
 @Injectable()
 export class MoneyRequestService {
@@ -34,6 +34,7 @@ export class MoneyRequestService {
       where: {
         id,
       },
+      relations: ['requestee', 'requester'],
     });
   }
 
@@ -153,61 +154,76 @@ export class MoneyRequestService {
 
   async updateMoneyRequest(
     user: User,
-    updateMoneyRequestDto: UpdateMoneyRequestDto,
+    updateMoneyRequestDto: Partial<UpdateMoneyRequestDto>,
   ): Promise<UpdateMoneyRequestOutput> {
-    const updates = pickBy(updateMoneyRequestDto, (x) => x !== undefined);
-
-    console.log({ updates });
+    const requestId = updateMoneyRequestDto.requestId;
+    const updates: Partial<UpdateMoneyRequestDto> = _.omit(
+      _.pickBy(updateMoneyRequestDto, (x) => x !== undefined),
+      'requestId',
+    );
 
     try {
-      // title, description and amount can be changed by requester only
-      if (
-        ['title', 'description', 'amount'].some((prop) =>
-          updates.hasOwnProperty(prop),
-        )
-      ) {
+      const moneyRequest = await this.getById(requestId);
+
+      if (moneyRequest === null) {
+        return {
+          ok: false,
+          status: 400,
+          error: "request doesn't exists anymore. make a new one",
+        };
       }
 
-      // status can be changed by requestee only
-      //   if (requesteeId === user.id) {
-      //     return {
-      //       ok: false,
-      //       status: 400,
-      //       error: "request rejected. can't ask yourself money",
-      //     };
-      //   }
+      if (
+        // title, description and amount can be changed by requester only
+        (['title', 'description', 'amount'].some((prop) =>
+          updates.hasOwnProperty(prop),
+        ) &&
+          user.id !== moneyRequest.requester.id) ||
+        // status can be changed by requstee only
+        (updates.hasOwnProperty('status') &&
+          user.id !== moneyRequest.requestee.id)
+      ) {
+        return {
+          ok: false,
+          status: 400,
+          error: 'current user not allowed to proceed with the request',
+        };
+      }
 
-      //   const requestee = await this.userService.getUserById(requesteeId);
+      // check status validtity
+      if (
+        (updates.status &&
+          // 1. if money is already PAID | REJECTED, we cant change it to anything
+          [MoneyRequestStatus.PAID, MoneyRequestStatus.REJECTED].includes(
+            moneyRequest.status,
+          )) ||
+        // 2. if money request is seen, it cant be pending again
+        (moneyRequest.status === MoneyRequestStatus.SEEN &&
+          updates.status === MoneyRequestStatus.PENDING)
+      ) {
+        return {
+          ok: false,
+          status: 400,
+          error: 'invalid status of money request',
+        };
+      }
 
-      //   if (requestee === null) {
-      //     return {
-      //       ok: false,
-      //       status: 400,
-      //       error: "request rejected. couldn't find the requestee",
-      //     };
-      //   }
+      //TODO: need to write money transfer logic
 
-      //   const moneyRequest = this.create({
-      //     title,
-      //     description,
-      //     amount,
-      //     requestee,
-      //     requester: user,
-      //   });
-
-      //   await this.moneyRequestRepo.insert(moneyRequest);
+      await this.moneyRequestRepo.update(moneyRequest.id, {
+        ...updates,
+      });
 
       return {
         ok: true,
         status: 201,
-        // requestId: moneyRequest.id,
       };
     } catch (e) {
       this.logger.error(e.message);
       return {
         ok: false,
         status: 500,
-        error: "couldn't send the money request",
+        error: "couldn't update the money request",
       };
     }
   }

@@ -12,7 +12,9 @@ export class FriendRequest extends CoreEntity {
     enum: FriendRequestStatus,
     default: FriendRequestStatus.PENDING,
   })
-  @IsEnum(FriendRequestStatus)
+  @IsEnum(FriendRequestStatus, {
+    message: 'invalid friend request update status',
+  })
   status: FriendRequestStatus;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
