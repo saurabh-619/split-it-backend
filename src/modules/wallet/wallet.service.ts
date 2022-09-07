@@ -1,16 +1,19 @@
-import { User } from '@user';
-import { Injectable } from '@nestjs/common';
+import { User, UserService } from '@user';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateWalletOutput } from './dtos/create-wallet.dto';
 import { Repository } from 'typeorm';
 import { Wallet } from './entities/wallet.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MyWalletOutput } from './dtos/my-wallet.dto';
 import { PinoLogger } from 'nestjs-pino';
+import { TransferMoneyOutput } from './dtos/transfer-money.dto';
 
 @Injectable()
 export class WalletService {
   constructor(
     private readonly logger: PinoLogger,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
     @InjectRepository(Wallet) private readonly walletRepo: Repository<Wallet>,
   ) {}
 
@@ -54,6 +57,95 @@ export class WalletService {
         ok: false,
         status: 500,
         error: "couldn't find the wallet",
+      };
+    }
+  }
+
+  async transferMoney(
+    user: User,
+    fromId: number,
+    toId: number,
+    amount: number,
+  ): Promise<TransferMoneyOutput> {
+    try {
+      const from = await this.userService.getUserById(fromId);
+
+      if (from === null || from.wallet === null) {
+        return {
+          ok: false,
+          status: 400,
+          error: "couldn't find the sender or their wallet",
+        };
+      }
+
+      if (user.id !== from.id) {
+        return {
+          ok: false,
+          status: 400,
+          error:
+            "current user doesn't have enough authority to proceed with given request",
+        };
+      }
+
+      const to = await this.userService.getUserById(toId);
+
+      if (to === null || to.wallet === null) {
+        return {
+          ok: false,
+          status: 400,
+          error: "couldn't find the receiver or their wallet",
+        };
+      }
+
+      if (from.wallet.balance < amount) {
+        return {
+          ok: false,
+          status: 400,
+          error: "sender doesn't have enough balance in the wallet",
+        };
+      }
+
+      try {
+        await this.walletRepo.manager.transaction(async (maneger) => {
+          // cut money from 'from' user
+          await maneger.update(
+            Wallet,
+            {
+              owner: { id: fromId },
+            },
+            {
+              balance: from.wallet.balance - amount,
+            },
+          );
+          // add money to 'to' user
+          await maneger.update(
+            Wallet,
+            {
+              owner: { id: toId },
+            },
+            {
+              balance: to.wallet.balance + amount,
+            },
+          );
+        });
+      } catch (error) {
+        return {
+          ok: false,
+          status: 400,
+          error: 'transaction went wrong',
+        };
+      }
+
+      return {
+        ok: true,
+        status: 200,
+      };
+    } catch (e) {
+      this.logger.error(e.messsage);
+      return {
+        ok: false,
+        status: 400,
+        error: "couldn't complete the transaction",
       };
     }
   }

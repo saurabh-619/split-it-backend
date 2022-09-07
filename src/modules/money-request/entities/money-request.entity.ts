@@ -20,6 +20,9 @@ export class MoneyRequest extends CoreEntity {
   })
   status: MoneyRequestStatus;
 
+  @Column({ type: 'text', nullable: true })
+  requesteeRemark?: string;
+
   @ManyToOne(() => User)
   requester: User;
 

@@ -1,3 +1,5 @@
+import { TransactionService } from '@transaction';
+import { WalletService } from '@wallet';
 import { User, UserService } from '@user';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import {
@@ -12,7 +14,7 @@ import {
   GetMoneyRequestsQuery,
   GetMoneyRequestsOutput,
 } from './dtos/get-money-requests.dto';
-import { MoneyRequestStatus } from '../common/types';
+import { MoneyRequestStatus, TransactionType } from '../common/types';
 import {
   UpdateMoneyRequestDto,
   UpdateMoneyRequestOutput,
@@ -25,6 +27,9 @@ export class MoneyRequestService {
     private readonly logger: PinoLogger,
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
+    @Inject(forwardRef(() => TransactionService))
+    private readonly transactionService: TransactionService,
+    private readonly walletService: WalletService,
     @InjectRepository(MoneyRequest)
     private readonly moneyRequestRepo: Repository<MoneyRequest>,
   ) {}
@@ -135,12 +140,21 @@ export class MoneyRequestService {
         requester: user,
       });
 
-      await this.moneyRequestRepo.insert(moneyRequest);
+      const savedMoneyRequest = await this.moneyRequestRepo.save(moneyRequest);
+
+      const savedTransaction = await this.transactionService.save({
+        amount,
+        type: TransactionType.WALLET,
+        from: requestee,
+        to: user,
+        moneyRequest: savedMoneyRequest,
+      });
 
       return {
         ok: true,
         status: 201,
         requestId: moneyRequest.id,
+        transactionId: savedTransaction.id,
       };
     } catch (e) {
       this.logger.error(e.message);
@@ -157,9 +171,12 @@ export class MoneyRequestService {
     updateMoneyRequestDto: Partial<UpdateMoneyRequestDto>,
   ): Promise<UpdateMoneyRequestOutput> {
     const requestId = updateMoneyRequestDto.requestId;
+    const transactionId = updateMoneyRequestDto.transactionId;
+
     const updates: Partial<UpdateMoneyRequestDto> = _.omit(
       _.pickBy(updateMoneyRequestDto, (x) => x !== undefined),
       'requestId',
+      'transactionId',
     );
 
     try {
@@ -170,6 +187,18 @@ export class MoneyRequestService {
           ok: false,
           status: 400,
           error: "request doesn't exists anymore. make a new one",
+        };
+      }
+
+      const transaction = await this.transactionService.getByIdWithRelations(
+        transactionId,
+      );
+
+      if (transaction === null) {
+        return {
+          ok: false,
+          status: 400,
+          error: "transaction doesn't exists anymore. make a new one",
         };
       }
 
@@ -208,7 +237,23 @@ export class MoneyRequestService {
         };
       }
 
-      //TODO: need to write money transfer logic
+      //transfer money if updates.status === 'paid'
+      if (updates.status && updates.status === MoneyRequestStatus.PAID) {
+        const { ok, error: transferError } =
+          await this.walletService.transferMoney(
+            user,
+            moneyRequest.requesteeId,
+            moneyRequest.requesterId,
+            moneyRequest.amount,
+          );
+
+        if (!ok) {
+          return { ok, status: 500, error: transferError };
+        }
+
+        transaction.isComplete = true;
+        await this.transactionService.save(transaction);
+      }
 
       await this.moneyRequestRepo.update(moneyRequest.id, {
         ...updates,
