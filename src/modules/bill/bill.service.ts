@@ -1,3 +1,4 @@
+import { WalletService } from '@wallet';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TransactionService } from '@transaction';
@@ -23,6 +24,7 @@ export class BillService {
     @InjectRepository(Bill) private readonly billRepo: Repository<Bill>,
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
+    private readonly walletService: WalletService,
     private readonly transactionService: TransactionService,
   ) {}
 
@@ -332,6 +334,19 @@ export class BillService {
           status: 400,
           error: "current user can't complete the transaction",
         };
+      }
+
+      // transfet money
+      const { ok, error: transferError } =
+        await this.walletService.transferMoney(
+          user,
+          transaction.from.id,
+          transaction.to.id,
+          transaction.amount,
+        );
+
+      if (!ok) {
+        return { ok, status: 500, error: transferError };
       }
 
       transaction.isComplete = true;

@@ -1,3 +1,5 @@
+import { TransactionModule } from '@transaction';
+import { WalletModule } from '@wallet';
 import { UserModule } from '@user';
 import { MoneyRequest } from './entities/money-request.entity';
 import { forwardRef, Module } from '@nestjs/common';
@@ -9,6 +11,8 @@ import { MoneyRequestController } from './money-request.controller';
   imports: [
     TypeOrmModule.forFeature([MoneyRequest]),
     forwardRef(() => UserModule),
+    forwardRef(() => TransactionModule),
+    WalletModule,
   ],
   providers: [MoneyRequestService],
   controllers: [MoneyRequestController],

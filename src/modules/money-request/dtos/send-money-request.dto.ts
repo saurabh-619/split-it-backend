@@ -32,4 +32,5 @@ export class SendMoneyRequestDto {
 
 export class SendMoneyRequestOutput extends CoreOutput {
   requestId?: number;
+  transactionId?: number;
 }

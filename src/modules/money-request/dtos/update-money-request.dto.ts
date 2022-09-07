@@ -10,9 +10,13 @@ import {
 } from 'class-validator';
 
 export class UpdateMoneyRequestDto {
-  @IsNumber(undefined, { message: 'request id should be valid number' })
+  @IsNumber(undefined, { message: 'request id should be a valid number' })
   @IsNotEmpty({ message: 'request id is required field' })
   requestId: number;
+
+  @IsNumber(undefined, { message: 'transaction id should be a valid number' })
+  @IsNotEmpty({ message: 'transaction id is required field' })
+  transactionId: number;
 
   @IsOptional()
   @IsString()
@@ -26,6 +30,12 @@ export class UpdateMoneyRequestDto {
   @MinLength(35, { message: 'description is too short' })
   @MaxLength(3000, { message: 'description is too long' })
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(35, { message: 'requestee remark is too short' })
+  @MaxLength(3000, { message: 'requestee remark is too long' })
+  requesteeRemark?: string;
 
   @IsOptional()
   @IsNumber(undefined, { message: 'amount should be valid number' })
