@@ -54,12 +54,28 @@ export class UserService {
     });
   }
 
+  async getUserByUsernameWithWalletWithsaltAndHash(
+    username: string,
+  ): Promise<User> {
+    return this.userRepo
+      .createQueryBuilder('user')
+      .select('*')
+      .leftJoinAndSelect('user.wallet', 'wallet')
+      .where('user.username = :username', { username })
+      .getRawOne();
+  }
+
   create(user: Partial<User>): User {
     return this.userRepo.create({
       ...user,
     });
   }
 
+  async save(user: Partial<User>): Promise<User> {
+    return this.userRepo.save({
+      ...user,
+    });
+  }
   async insert(user: Partial<User>): Promise<InsertResult> {
     return this.userRepo.insert({
       ...user,
