@@ -7,7 +7,7 @@ export class Wallet extends CoreEntity {
   @Column({ type: 'double precision', default: 5000 })
   balance: number;
 
-  @OneToOne(() => User, (user) => user.wallet, {
+  @OneToOne(() => User, (user: User) => user.wallet, {
     nullable: true,
     onDelete: 'CASCADE',
   })
