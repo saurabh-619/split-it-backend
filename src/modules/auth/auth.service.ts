@@ -70,11 +70,12 @@ export class AuthService {
         avatar,
       });
 
-      const result = await this.userService.insert(newUser);
+      const userResult = await this.userService.save(newUser);
+      await this.walletService.update({ ...wallet, owner: userResult });
 
       // generate token
       const token = this.jwtService.sign({
-        id: result.identifiers[0].id,
+        id: userResult.id,
         email,
         username,
       });
@@ -98,7 +99,10 @@ export class AuthService {
     const { password, username } = loginDto;
     try {
       // check if user already exists
-      const user = await this.userService.getUserByUsernameWithWallet(username);
+      const user =
+        await this.userService.getUserByUsernameWithWalletWithsaltAndHash(
+          username,
+        );
 
       if (user === null) {
         return {

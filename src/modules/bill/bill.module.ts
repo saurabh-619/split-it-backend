@@ -1,5 +1,10 @@
 import { WalletModule } from '@wallet';
-import { forwardRef, Module } from '@nestjs/common';
+import {
+  forwardRef,
+  Module,
+  NestModule,
+  MiddlewareConsumer,
+} from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionModule } from '@transaction';
 import { UserModule } from '@user';
@@ -18,4 +23,8 @@ import { Bill } from './entities/bill.entity';
   controllers: [BillController],
   exports: [BillService],
 })
-export class BillModule {}
+export class BillModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply();
+  }
+}

@@ -25,6 +25,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from 'nestjs-pino';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -51,5 +52,6 @@ import { LoggerModule } from 'nestjs-pino';
       useClass: ThrottlerGuard,
     },
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

@@ -1,7 +1,7 @@
 import { User, UserService } from '@user';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateWalletOutput } from './dtos/create-wallet.dto';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { Wallet } from './entities/wallet.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MyWalletOutput } from './dtos/my-wallet.dto';
@@ -59,6 +59,14 @@ export class WalletService {
         error: "couldn't find the wallet",
       };
     }
+  }
+
+  async save(wallet: Partial<Wallet>): Promise<Wallet> {
+    return this.walletRepo.save(wallet);
+  }
+
+  async update(wallet: Partial<Wallet>): Promise<UpdateResult> {
+    return this.walletRepo.update(wallet.id, wallet);
   }
 
   async transferMoney(

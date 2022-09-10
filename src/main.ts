@@ -63,6 +63,6 @@ async function bootstrap() {
   });
 
   app.useLogger(app.get(Logger));
-  await app.listen(3000);
+  await app.listen(process.env.NODE_ENV || 3000);
 }
 bootstrap();

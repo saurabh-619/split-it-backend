@@ -1,9 +1,8 @@
-import { User } from '@user';
 import { AuthUser } from '@auth-user';
-import { Controller, Get, Post } from '@nestjs/common';
-import { WalletService } from './wallet.service';
+import { Controller, Get } from '@nestjs/common';
+import { User } from '@user';
 import { MyWalletOutput } from './dtos/my-wallet.dto';
-import { TransferMoneyOutput } from './dtos/transfer-money.dto';
+import { WalletService } from './wallet.service';
 
 @Controller('wallet')
 export class WalletController {
@@ -14,8 +13,8 @@ export class WalletController {
     return this.walletService.myWallet(user);
   }
 
-  @Post()
-  transferMoney(@AuthUser() user: User): Promise<TransferMoneyOutput> {
-    return this.walletService.transferMoney(user, 7, 8, 250);
-  }
+  // @Post()
+  // transferMoney(@AuthUser() user: User): Promise<TransferMoneyOutput> {
+  //   return this.walletService.transferMoney(user, 7, 8, 250);
+  // }
 }
