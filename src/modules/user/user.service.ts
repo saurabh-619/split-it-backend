@@ -4,12 +4,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, InsertResult, Repository } from 'typeorm';
 import { UpdateUserDto, UpdateUserOutput } from './dtos/update-user.dto';
 import { User } from './entities/user.entity';
+import { PinoLogger } from 'nestjs-pino';
+import { CheckIfUsernameAvailableOutput } from './dtos/check-if-username-taken.dto';
 
 @Injectable()
 export class UserService {
   constructor(
+    private readonly logger: PinoLogger,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
-  ) {}
+  ) {
+    this.logger.setContext(UserService.name);
+  }
 
   async me(): Promise<string> {
     return 'user';
@@ -76,10 +81,28 @@ export class UserService {
       ...user,
     });
   }
+
   async insert(user: Partial<User>): Promise<InsertResult> {
     return this.userRepo.insert({
       ...user,
     });
+  }
+
+  async checkIfUsernameAvailable(
+    username: string,
+  ): Promise<CheckIfUsernameAvailableOutput> {
+    try {
+      const count = await this.userRepo.count({ where: { username } });
+
+      return {
+        ok: true,
+        status: 200,
+        isAvailable: count === 0,
+      };
+    } catch (e) {
+      this.logger.error(e.message);
+      return {};
+    }
   }
 
   async update(
@@ -125,6 +148,7 @@ export class UserService {
         status: 201,
       };
     } catch (e) {
+      this.logger.error(e.message);
       return {
         ok: false,
         status: 500,
