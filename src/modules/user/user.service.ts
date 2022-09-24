@@ -6,6 +6,7 @@ import { UpdateUserDto, UpdateUserOutput } from './dtos/update-user.dto';
 import { User } from './entities/user.entity';
 import { PinoLogger } from 'nestjs-pino';
 import { CheckIfUsernameAvailableOutput } from './dtos/check-if-username-taken.dto';
+import { SearchUserOuput } from './dtos/search-user.dto';
 
 @Injectable()
 export class UserService {
@@ -102,6 +103,34 @@ export class UserService {
     } catch (e) {
       this.logger.error(e.message);
       return {};
+    }
+  }
+
+  async searchUser(query: string): Promise<SearchUserOuput> {
+    try {
+      const results = await this.userRepo
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.wallet', 'wallet')
+        .where('user.username Ilike :query', { query: `%${query}%` })
+        .orWhere('user.firstName Ilike :query', { query: `%${query}%` })
+        .orWhere('user.lastName Ilike :query', { query: `%${query}%` })
+        .limit(7)
+        .getMany();
+
+      return {
+        ok: true,
+        status: 200,
+        size: results.length,
+        results,
+      };
+    } catch (e) {
+      this.logger.error(e.message);
+      return {
+        ok: false,
+        status: 500,
+        error: "couldn't find friends",
+        results: [],
+      };
     }
   }
 

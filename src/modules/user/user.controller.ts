@@ -6,8 +6,9 @@ import { User } from './entities/user.entity';
 import { UpdateUserDto, UpdateUserOutput } from './dtos/update-user.dto';
 import {
   CheckIfUsernameAvailableOutput,
-  CheckIfUsernameAvailableQueryDto,
+  UsernameQueryDto,
 } from './dtos/check-if-username-taken.dto';
+import { SearchQueryDto } from './dtos/search-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -20,9 +21,16 @@ export class UserController {
 
   @Get('/is-available')
   checkIfUsernameAvailable(
-    @Query() query: CheckIfUsernameAvailableQueryDto,
+    @Query() query: UsernameQueryDto,
   ): Promise<CheckIfUsernameAvailableOutput> {
     return this.userService.checkIfUsernameAvailable(query.username);
+  }
+
+  @Get('/search')
+  searchUser(
+    @Query() query: SearchQueryDto,
+  ): Promise<CheckIfUsernameAvailableOutput> {
+    return this.userService.searchUser(query.query);
   }
 
   @Patch('/')

@@ -1,7 +1,7 @@
 import { CoreOutput } from '@common';
 import { IsNotEmpty } from 'class-validator';
 
-export class CheckIfUsernameAvailableQueryDto {
+export class UsernameQueryDto {
   @IsNotEmpty({ message: 'username query is required' })
   username: string;
 }
