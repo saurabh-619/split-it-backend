@@ -2,5 +2,5 @@ import { ThrottlerModuleOptions } from '@nestjs/throttler';
 
 export const throllerOptions: ThrottlerModuleOptions = {
   ttl: 60,
-  limit: 20,
+  limit: 60,
 };

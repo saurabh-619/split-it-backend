@@ -129,7 +129,9 @@ export class AuthService {
 
       // generate token
       const token = this.jwtService.sign({
-        id: user.id,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        id: user.ownerId,
         email: user.email,
         username: user.username,
       });

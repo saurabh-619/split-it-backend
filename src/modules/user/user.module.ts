@@ -24,6 +24,6 @@ export class UserModule implements NestModule {
     consumer
       .apply(AuthMiddleware)
       .exclude('/health', '/auth/login', '/auth/register', '/user/is-available')
-      .forRoutes('/');
+      .forRoutes('*');
   }
 }
