@@ -20,6 +20,7 @@ import {
   UpdateMoneyRequestOutput,
 } from './dtos/update-money-request.dto';
 import * as _ from 'lodash';
+import { GetMoneyRequestsBetweenTwoUsersOuput } from './dtos/get-money-requests-between-two-users.dto';
 
 @Injectable()
 export class MoneyRequestService {
@@ -105,6 +106,36 @@ export class MoneyRequestService {
         ok: false,
         status: 500,
         error: "couldn't find the money requests made to other users",
+      };
+    }
+  }
+
+  async getMoneyRequestsBetweenTwoUser(
+    userId1: number,
+    userId2: number,
+  ): Promise<GetMoneyRequestsBetweenTwoUsersOuput> {
+    try {
+      const moneyRequests = await this.moneyRequestRepo
+        .createQueryBuilder('money_request')
+        .leftJoinAndSelect('money_request.requester', 'requester')
+        .leftJoinAndSelect('money_request.requestee', 'requestee')
+        .where('requester.id = :userId1', { userId1 })
+        .andWhere('requestee.id = :userId2', { userId2 })
+        .orWhere('requester.id = :userId2', { userId2 })
+        .andWhere('requestee.id = :userId1', { userId1 })
+        .getMany();
+
+      return {
+        ok: true,
+        status: 200,
+        moneyRequests,
+      };
+    } catch (e) {
+      this.logger.error(e.message);
+      return {
+        ok: true,
+        status: 500,
+        error: "couldn't get money requests between two users",
       };
     }
   }
