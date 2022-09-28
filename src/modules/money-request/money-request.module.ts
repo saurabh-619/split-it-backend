@@ -1,6 +1,6 @@
-import { TransactionModule } from '@transaction';
-import { WalletModule } from '@wallet';
-import { UserModule } from '@user';
+import { WalletModule } from './../wallet/wallet.module';
+import { TransactionModule } from './../transaction/transaction.module';
+import { UserModule } from './../user/user.module';
 import { MoneyRequest } from './entities/money-request.entity';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,10 +11,11 @@ import { MoneyRequestController } from './money-request.controller';
   imports: [
     TypeOrmModule.forFeature([MoneyRequest]),
     forwardRef(() => UserModule),
-    forwardRef(() => TransactionModule),
+    TransactionModule,
     WalletModule,
   ],
   providers: [MoneyRequestService],
   controllers: [MoneyRequestController],
+  exports: [MoneyRequestService],
 })
 export class MoneyRequestModule {}

@@ -1,9 +1,8 @@
-import { TransactionStatus, TransactionType } from '@common';
-import { Injectable } from '@nestjs/common';
+import { User } from './../user/entities/User.entity';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '@user';
-import { PinoLogger } from 'nestjs-pino';
 import { InsertResult, Repository } from 'typeorm';
+import { TransactionStatus, TransactionType } from './../common/types';
 import {
   GetTransactionDto,
   GetTransactionsOutput,
@@ -12,11 +11,14 @@ import { Transaction } from './entities/transaction.entity';
 
 @Injectable()
 export class TransactionService {
+  private readonly logger: Logger;
+
   constructor(
-    private readonly logger: PinoLogger,
     @InjectRepository(Transaction)
     private readonly transactionRepo: Repository<Transaction>,
-  ) {}
+  ) {
+    this.logger = new Logger(TransactionService.name);
+  }
 
   getById(id: number): Promise<Transaction> {
     return this.transactionRepo.findOne({

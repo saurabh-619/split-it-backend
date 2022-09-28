@@ -1,7 +1,8 @@
-import { CoreEntity, TransactionType } from '@common';
-import { MoneyRequest } from '@money-request';
-import { User } from '@user';
-import { Bill } from 'src/modules/bill/entities/bill.entity';
+import { User } from './../../user/entities/User.entity';
+import { MoneyRequest } from './../../money-request/entities/money-request.entity';
+import { Bill } from './../../bill/entities/bill.entity';
+import { TransactionType } from './../../common/types';
+import { CoreEntity } from './../../common/enitites/core.entity';
 import {
   Column,
   Entity,

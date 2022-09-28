@@ -1,6 +1,7 @@
-import { MoneyRequest } from '@money-request';
-import { User } from '@user';
-import { CoreOutput, FriendRequestStatus } from '@common';
+import { MoneyRequest } from './../../money-request/entities/money-request.entity';
+import { User } from './../entities/User.entity';
+import { FriendRequestStatus } from './../../common/types';
+import { CoreOutput } from './../../common/dtos/output.dto';
 
 export class GetUserOutput extends CoreOutput {
   isFriend?: boolean;

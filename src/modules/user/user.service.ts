@@ -1,20 +1,26 @@
-import { pickBy } from 'lodash';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { pickBy } from 'lodash';
 import { In, InsertResult, Repository } from 'typeorm';
+import { FriendRequestStatus } from '../common/types';
+import { FriendRequestService } from '../friend-request/friend-request.service';
+import { MoneyRequestService } from '../money-request/money-request.service';
+import { CheckIfUsernameAvailableOutput } from './dtos/check-if-username-taken.dto';
+import { GetUserOutput } from './dtos/get-user.dto';
+import { SearchUserOuput } from './dtos/search-user.dto';
 import { UpdateUserDto, UpdateUserOutput } from './dtos/update-user.dto';
 import { User } from './entities/user.entity';
-import { PinoLogger } from 'nestjs-pino';
-import { CheckIfUsernameAvailableOutput } from './dtos/check-if-username-taken.dto';
-import { SearchUserOuput } from './dtos/search-user.dto';
 
 @Injectable()
 export class UserService {
+  private readonly logger: Logger;
+
   constructor(
-    private readonly logger: PinoLogger,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
+    private readonly friendRequestService: FriendRequestService,
+    private readonly moneyRequestService: MoneyRequestService,
   ) {
-    this.logger.setContext(UserService.name);
+    this.logger = new Logger(UserService.name);
   }
 
   async me(): Promise<string> {
@@ -130,6 +136,45 @@ export class UserService {
         status: 500,
         error: "couldn't find friends",
         results: [],
+      };
+    }
+  }
+
+  async getUser(userId1: number, id: number): Promise<GetUserOutput> {
+    try {
+      const user = await this.userRepo.findOne({
+        where: { id },
+        relations: ['wallet'],
+      });
+
+      const { request } =
+        await this.friendRequestService.getFriendRequestBetweenTwoUsers(
+          userId1,
+          id,
+        );
+
+      const { moneyRequests } =
+        await this.moneyRequestService.getMoneyRequestsBetweenTwoUser(
+          userId1,
+          id,
+        );
+
+      return {
+        ok: true,
+        status: 200,
+        isFriend: request
+          ? request.status === FriendRequestStatus.ACCEPTED
+          : false,
+        friendshipStatus: request ? request.status : undefined,
+        user,
+        moneyRequests,
+      };
+    } catch (e) {
+      this.logger.error(e.message);
+      return {
+        ok: false,
+        status: 500,
+        error: "couldn't find the user",
       };
     }
   }

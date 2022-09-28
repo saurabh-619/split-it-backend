@@ -1,7 +1,7 @@
-import { CoreEntity } from '@common';
-import { Item } from '@item';
-import { User } from '@user';
-import { Bill } from 'src/modules/bill/entities/bill.entity';
+import { User } from './../../user/entities/User.entity';
+import { Bill } from './../../bill/entities/bill.entity';
+import { CoreEntity } from './../../common/enitites/core.entity';
+import { Item } from './../../item/entities/item.entity';
 import {
   Column,
   Entity,

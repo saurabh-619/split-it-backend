@@ -1,7 +1,7 @@
-import { CoreEntity } from '@common';
-import { FriendRequestStatus } from '@common';
-import { MoneyRequest } from '@money-request';
-import { User } from '@user';
+import { MoneyRequest } from './../../money-request/entities/money-request.entity';
+import { User } from './../../user/entities/User.entity';
+import { FriendRequestStatus } from './../../common/types';
+import { CoreEntity } from './../../common/enitites/core.entity';
 import { IsEnum } from 'class-validator';
 import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
 

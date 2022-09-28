@@ -1,4 +1,4 @@
-import { JwtModuleOptions } from '@jwt';
+import { JwtModuleOptions } from './../modules/jwt/interfaces/jwt-module-options.interface';
 import * as dotenv from 'dotenv';
 
 dotenv.config({

@@ -1,21 +1,23 @@
-import { User, UserService } from '@user';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { CreateWalletOutput } from './dtos/create-wallet.dto';
-import { Repository, UpdateResult } from 'typeorm';
-import { Wallet } from './entities/wallet.entity';
+import { User } from './../user/entities/User.entity';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, UpdateResult } from 'typeorm';
+import { UserService } from '../user/user.service';
+import { CreateWalletOutput } from './dtos/create-wallet.dto';
 import { MyWalletOutput } from './dtos/my-wallet.dto';
-import { PinoLogger } from 'nestjs-pino';
 import { TransferMoneyOutput } from './dtos/transfer-money.dto';
+import { Wallet } from './entities/wallet.entity';
 
 @Injectable()
 export class WalletService {
+  private readonly logger: Logger;
+
   constructor(
-    private readonly logger: PinoLogger,
-    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     @InjectRepository(Wallet) private readonly walletRepo: Repository<Wallet>,
-  ) {}
+  ) {
+    this.logger = new Logger(WalletService.name);
+  }
 
   async createWallet(username: string): Promise<CreateWalletOutput> {
     try {

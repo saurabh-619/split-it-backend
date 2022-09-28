@@ -1,6 +1,6 @@
-import { CoreEntity } from '@common';
-import { User } from '@user';
-import { BillItem } from '@bill-item';
+import { BillItem } from './../../bill-item/entities/bill-item.entity';
+import { User } from './../../user/entities/User.entity';
+import { CoreEntity } from './../../common/enitites/core.entity';
 import {
   Column,
   Entity,

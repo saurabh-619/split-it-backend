@@ -1,6 +1,6 @@
-import { AuthUser } from '@auth-user';
+import { User } from './../user/entities/User.entity';
 import { Controller, Get } from '@nestjs/common';
-import { User } from '@user';
+import { AuthUser } from '../auth/auth.user.decorator';
 import { MyWalletOutput } from './dtos/my-wallet.dto';
 import { WalletService } from './wallet.service';
 

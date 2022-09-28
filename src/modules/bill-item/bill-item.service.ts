@@ -1,16 +1,16 @@
-import { UserService } from '@user';
-import { BillService } from '@bill';
-import { ItemService } from '@item';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Repository } from 'typeorm';
-import { AddBillItemDto, AddBillItemOutput } from './dtos/add-bill-item.dto';
-import { BillItem } from './entities/bill-item.entity';
 import { PinoLogger } from 'nestjs-pino';
+import { DeleteResult, Repository } from 'typeorm';
+import { BillService } from './../bill/bill.service';
+import { ItemService } from './../item/item.service';
+import { UserService } from './../user/user.service';
+import { AddBillItemDto, AddBillItemOutput } from './dtos/add-bill-item.dto';
 import {
   RemoveBillItemDto,
   RemoveBillItemOutput,
 } from './dtos/remove-bill-item.dto';
+import { BillItem } from './entities/bill-item.entity';
 
 @Injectable()
 export class BillItemService {
@@ -18,9 +18,7 @@ export class BillItemService {
     private readonly logger: PinoLogger,
     @InjectRepository(BillItem)
     private readonly billItemRepo: Repository<BillItem>,
-    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
-    @Inject(forwardRef(() => BillService))
     private readonly billService: BillService,
     private readonly itemService: ItemService,
   ) {}

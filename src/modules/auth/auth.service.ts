@@ -1,10 +1,10 @@
-import { HttpService } from '@http';
-import { JwtService } from '@jwt';
 import { Injectable } from '@nestjs/common';
-import { UserService } from '@user';
-import { ValidationService } from '@validation';
-import { WalletService } from '@wallet';
 import { PinoLogger } from 'nestjs-pino';
+import { HttpService } from './../http/http.service';
+import { JwtService } from './../jwt/jwt.service';
+import { UserService } from './../user/user.service';
+import { ValidationService } from './../validation/validation.service';
+import { WalletService } from './../wallet/wallet.service';
 import { LoginDto, LoginOutput } from './dtos/login.dto';
 import { RegisterDto, RegisterOutput } from './dtos/register.dto';
 

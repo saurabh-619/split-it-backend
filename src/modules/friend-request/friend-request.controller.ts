@@ -1,6 +1,3 @@
-import { BadRequesteeIdException } from './exceptions/index';
-import { User } from '@user';
-import { AuthUser } from '@auth-user';
 import {
   Body,
   Controller,
@@ -9,12 +6,15 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { GetPendingRequestsOuput } from './dtos/get-pending-requests';
-import { FriendRequestService } from './friend-request.service';
+import { AuthUser } from '../auth/auth.user.decorator';
+import { User } from './../user/entities/User.entity';
 import {
   AcknowledgeFriendRequestDto,
   AcknowledgeFriendRequestOutput,
 } from './dtos/acknowledge-friend-request.dto';
+import { GetPendingRequestsOuput } from './dtos/get-pending-requests';
+import { BadRequesteeIdException } from './exceptions/index';
+import { FriendRequestService } from './friend-request.service';
 
 @Controller('friend-request')
 export class FriendRequestController {

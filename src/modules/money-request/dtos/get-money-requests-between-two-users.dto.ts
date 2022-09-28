@@ -1,5 +1,5 @@
-import { MoneyRequest } from '@money-request';
-import { CoreOutput } from '@common';
+import { MoneyRequest } from './../entities/money-request.entity';
+import { CoreOutput } from './../../common/dtos/output.dto';
 
 export class GetMoneyRequestsBetweenTwoUsersOuput extends CoreOutput {
   moneyRequests?: MoneyRequest[];

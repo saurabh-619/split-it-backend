@@ -1,5 +1,5 @@
-import { User } from '@user';
-import { CoreEntity } from '@common';
+import { User } from './../../user/entities/User.entity';
+import { CoreEntity } from './../../common/enitites/core.entity';
 import { Column, Entity, JoinColumn, OneToOne, RelationId } from 'typeorm';
 
 @Entity('wallet')

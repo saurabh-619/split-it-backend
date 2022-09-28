@@ -1,5 +1,5 @@
+import { __prod__ } from './../utils/constant';
 import { ConfigModuleOptions } from '@nestjs/config';
-import { __prod__ } from '@utils';
 
 export const configModuleOptions: ConfigModuleOptions = {
   isGlobal: true,

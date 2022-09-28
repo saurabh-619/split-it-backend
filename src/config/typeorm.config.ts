@@ -3,7 +3,7 @@ import {
   TypeOrmModuleAsyncOptions,
   TypeOrmModuleOptions,
 } from '@nestjs/typeorm';
-import { __prod__ } from '@utils';
+import { __prod__ } from './../utils/constant';
 
 export const typeOrmAsyncOptions: TypeOrmModuleAsyncOptions = {
   imports: [ConfigModule],
@@ -25,6 +25,7 @@ export const typeOrmAsyncOptions: TypeOrmModuleAsyncOptions = {
     logging: !__prod__,
     synchronize: true,
     entities: [__dirname + '/../modules/**/*.entity.{ts,js}'],
+    autoLoadEntities: true,
     migrations: [__dirname + '/../migrations/*.{ts,js}'],
   }),
   inject: [ConfigService],

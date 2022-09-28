@@ -1,22 +1,28 @@
-import { CoreOutput, FriendRequestStatus } from '@common';
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User, UserService } from '@user';
-import { PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
+import { CoreOutput } from './../common/dtos/output.dto';
+import { FriendRequestStatus } from './../common/types';
+import { User } from './../user/entities/User.entity';
+import { UserService } from './../user/user.service';
 import { AcknowledgeFriendRequestOutput } from './dtos/acknowledge-friend-request.dto';
 import { GetFriendsOutput } from './dtos/get-friends.dto';
 import { GetPendingRequestsOuput } from './dtos/get-pending-requests';
+import { GetFriendRequestBetweenTwoOutput } from './dtos/get-request-between-two.dto';
 import { FriendRequest } from './entities/friend-request.entity';
 
 @Injectable()
 export class FriendRequestService {
+  private readonly logger: Logger;
+
   constructor(
-    private readonly logger: PinoLogger,
-    private readonly userService: UserService,
     @InjectRepository(FriendRequest)
     private readonly friendRequestRepo: Repository<FriendRequest>,
-  ) {}
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
+  ) {
+    this.logger = new Logger(FriendRequestService.name);
+  }
 
   async getPendingRequests(user: User): Promise<GetPendingRequestsOuput> {
     try {
@@ -30,7 +36,7 @@ export class FriendRequestService {
         relations: ['requester', 'requestee'],
       });
       return {
-        ok: false,
+        ok: true,
         status: 200,
         count: friendRequests[1],
         friendRequests: friendRequests[0],
@@ -53,6 +59,28 @@ export class FriendRequestService {
       //   relations: ['requestee', 'requester'],
       loadRelationIds: true,
     });
+  }
+
+  async getFriendRequestBetweenTwoUsers(
+    userId1: number,
+    userId2: number,
+  ): Promise<GetFriendRequestBetweenTwoOutput> {
+    try {
+      const request = await this.friendRequestRepo
+        .createQueryBuilder('request')
+        .leftJoinAndSelect('request.requester', 'requester')
+        .leftJoinAndSelect('request.requestee', 'requestee')
+        .where('requester.id = :userId1', { userId1 })
+        .andWhere('requestee.id = :userId2', { userId2 })
+        .orWhere('requester.id = :userId2', { userId2 })
+        .andWhere('requestee.id = :userId1', { userId1 })
+        .getOne();
+
+      return { ok: true, status: 200, request };
+    } catch (e) {
+      this.logger.error(e.message);
+      return { ok: false, status: 500, error: "couldn't find the request" };
+    }
   }
 
   async sendFriendRequest(
@@ -164,9 +192,7 @@ export class FriendRequestService {
       }
 
       request.status = status;
-      const requestResult = await this.friendRequestRepo.save(request);
-
-      console.log({ requestResult });
+      await this.friendRequestRepo.save(request);
 
       return {
         ok: true,

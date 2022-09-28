@@ -1,17 +1,18 @@
-import { WalletService } from '@wallet';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { User } from './../user/entities/User.entity';
+import { PaginationQueryDto } from './../common/dtos/pagination.dto';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TransactionService } from '@transaction';
-import { User, UserService } from '@user';
-import { PinoLogger } from 'nestjs-pino';
 import { Repository, UpdateResult } from 'typeorm';
-import { PaginationQueryDto } from '@common';
+import { TransactionService } from './../transaction/transaction.service';
+import { UserService } from './../user/user.service';
+import { WalletService } from './../wallet/wallet.service';
 import { AddFriendsDto } from './dtos/add-friends.dto';
 import { GenerateBillDto, GenerateBillOutput } from './dtos/generate-bill.dto';
 import { GetBillsOuput } from './dtos/get-bills.dto';
 import { GetEntireByIdOutput } from './dtos/get-entire-by-id.dto';
 import { InsertBillDto, InsertBillOuput } from './dtos/insert-bill.dto';
 import { Bill } from './entities/bill.entity';
+
 import {
   PayTheSplitDto,
   PayTheSplitOutput,
@@ -19,14 +20,15 @@ import {
 
 @Injectable()
 export class BillService {
+  private readonly logger: Logger;
   constructor(
-    private readonly logger: PinoLogger,
-    @InjectRepository(Bill) private readonly billRepo: Repository<Bill>,
-    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private readonly walletService: WalletService,
     private readonly transactionService: TransactionService,
-  ) {}
+    @InjectRepository(Bill) private readonly billRepo: Repository<Bill>,
+  ) {
+    this.logger = new Logger(BillService.name);
+  }
 
   async getById(id: number): Promise<Bill> {
     return this.billRepo.findOne({

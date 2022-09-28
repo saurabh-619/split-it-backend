@@ -1,4 +1,5 @@
-import { CoreOutput, MoneyRequestStatus } from '@common';
+import { CoreOutput } from './../../common/dtos/output.dto';
+import { MoneyRequestStatus } from './../../common/types';
 import {
   IsEnum,
   IsNotEmpty,
