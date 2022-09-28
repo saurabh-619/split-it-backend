@@ -1,19 +1,17 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { UserService } from './user.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { MoneyRequestModule } from '../money-request/money-request.module';
+import { AuthMiddleware } from './../auth/auth.middleware';
+import { FriendRequestModule } from './../friend-request/friend-request.module';
 import { User } from './entities/user.entity';
 import { UserController } from './user.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ValidationModule } from '@validation';
-import { HttpModule } from '@http';
-import { WalletModule } from '@wallet';
-import { AuthMiddleware } from '@auth';
+import { UserService } from './user.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
-    ValidationModule,
-    HttpModule,
-    WalletModule,
+    FriendRequestModule,
+    MoneyRequestModule,
   ],
   providers: [UserService],
   controllers: [UserController],

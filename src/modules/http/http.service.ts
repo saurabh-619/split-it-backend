@@ -1,6 +1,6 @@
+import { UNSPLASH_BASE_URL } from './../../utils/constant';
 import { HttpService as AxiosHttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { UNSPLASH_BASE_URL } from '@utils';
 import { GetRandomAvatarOutput } from './dtos/get-random-avatar';
 
 @Injectable()

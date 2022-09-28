@@ -1,4 +1,4 @@
-import { CoreEntity } from '@common';
+import { CoreEntity } from './../../common/enitites/core.entity';
 import { Column, Entity } from 'typeorm';
 
 @Entity('item')

@@ -1,5 +1,5 @@
-import { JwtService } from '@jwt';
-import { UserService } from '@user';
+import { UserService } from './../user/user.service';
+import { JwtService } from './../jwt/jwt.service';
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { PinoLogger } from 'nestjs-pino';

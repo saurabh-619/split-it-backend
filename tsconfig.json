@@ -17,25 +17,6 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "noUnusedLocals": true,
-    "baseUrl": "./",
-    "paths": {
-      "@config": ["./src/config/index"],
-      "@utils": ["./src/utils/index"],
-      "@common": ["./src/modules/common/index"],
-      "@modules": ["./src/modules/index"],
-      "@validation": ["./src/modules/validation/index"],
-      "@http": ["./src/modules/http/index"],
-      "@jwt": ["./src/modules/jwt/index"],
-      "@auth": ["./src/modules/auth/index"],
-      "@auth-user": ["./src/modules/auth/auth.user.decorator"],
-      "@user": ["./src/modules/user/index"],
-      "@wallet": ["./src/modules/wallet/index"],
-      "@money-request": ["./src/modules/money-request/index"],
-      "@friend-request": ["./src/modules/friend-request/index"],
-      "@item": ["./src/modules/item/index"],
-      "@bill": ["./src/modules/bill/index"],
-      "@bill-item": ["./src/modules/bill-item/index"],
-      "@transaction": ["./src/modules/transaction/index"]
-    }
+    "baseUrl": "./"
   }
 }

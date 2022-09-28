@@ -1,4 +1,4 @@
-import { CoreOutput } from '@common';
+import { CoreOutput } from './../../common/dtos/output.dto';
 import { IsNotEmpty } from 'class-validator';
 
 export class UsernameQueryDto {

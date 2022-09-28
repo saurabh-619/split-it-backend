@@ -1,8 +1,8 @@
-import { AuthUser } from '@auth-user';
+import { User } from './../user/entities/User.entity';
 import { Controller, Get, Query } from '@nestjs/common';
-import { User } from '@user';
 import { GetTransactionDto } from './dtos/get-transactions.dto';
 import { TransactionService } from './transaction.service';
+import { AuthUser } from '../auth/auth.user.decorator';
 
 @Controller('transaction')
 export class TransactionController {

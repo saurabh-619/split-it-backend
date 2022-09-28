@@ -1,4 +1,5 @@
-import { CoreOutput } from '@common';
+import { CoreOutput } from './../../common/dtos/output.dto';
+
 import { IsString, IsOptional, IsEmail, IsNotEmpty } from 'class-validator';
 
 export class UpdateUserDto {

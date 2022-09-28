@@ -1,11 +1,10 @@
+import { TransactionStatus, TransactionType } from './../../common/types';
+import {
+  PaginationQueryDto,
+  PaginationOuput,
+} from './../../common/dtos/pagination.dto';
 import { IsEnum, IsOptional } from 'class-validator';
 import { Transaction } from './../entities/transaction.entity';
-import {
-  PaginationOuput,
-  PaginationQueryDto,
-  TransactionStatus,
-  TransactionType,
-} from '@common';
 
 export class GetTransactionDto extends PaginationQueryDto {
   @IsOptional()

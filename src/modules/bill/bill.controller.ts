@@ -1,5 +1,3 @@
-import { AuthUser } from '@auth-user';
-import { PaginationQueryDto } from '@common';
 import {
   Body,
   Controller,
@@ -10,7 +8,9 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { User } from '@user';
+import { PaginationQueryDto } from './../common/dtos/pagination.dto';
+import { User } from './../user/entities/User.entity';
+import { AuthUser } from '../auth/auth.user.decorator';
 import { BillService } from './bill.service';
 import { AddFriendsDto } from './dtos/add-friends.dto';
 import { GenerateBillDto, GenerateBillOutput } from './dtos/generate-bill.dto';

@@ -1,4 +1,4 @@
-import { CoreOutput } from '@common';
+import { CoreOutput } from './../../common/dtos/output.dto';
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class AddBillItemDto {

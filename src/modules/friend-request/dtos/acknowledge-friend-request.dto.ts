@@ -1,4 +1,5 @@
-import { CoreOutput, FriendRequestStatus } from '@common';
+import { CoreOutput } from './../../common/dtos/output.dto';
+import { FriendRequestStatus } from './../../common/types';
 import { IsEnum, IsNumber, IsString } from 'class-validator';
 
 export class AcknowledgeFriendRequestDto {

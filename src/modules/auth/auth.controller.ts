@@ -1,6 +1,6 @@
-import { AuthUser } from '@auth-user';
+import { AuthUser } from './auth.user.decorator';
+import { User } from './../user/entities/User.entity';
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { User } from '@user';
 import { AuthService } from './auth.service';
 import { LoginDto, LoginOutput } from './dtos/login.dto';
 import { RegisterDto, RegisterOutput } from './dtos/register.dto';

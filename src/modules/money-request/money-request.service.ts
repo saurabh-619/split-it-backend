@@ -1,38 +1,42 @@
-import { TransactionService } from '@transaction';
-import { WalletService } from '@wallet';
-import { User, UserService } from '@user';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { User } from './../user/entities/User.entity';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as _ from 'lodash';
+import { Repository } from 'typeorm';
+import { MoneyRequestStatus, TransactionType } from '../common/types';
+import { TransactionService } from './../transaction/transaction.service';
+import { UserService } from './../user/user.service';
+import { WalletService } from './../wallet/wallet.service';
+import { GetMoneyRequestsBetweenTwoUsersOuput } from './dtos/get-money-requests-between-two-users.dto';
+import {
+  GetMoneyRequestsOutput,
+  GetMoneyRequestsQuery,
+} from './dtos/get-money-requests.dto';
 import {
   SendMoneyRequestDto,
   SendMoneyRequestOutput,
 } from './dtos/send-money-request.dto';
-import { Repository } from 'typeorm';
-import { MoneyRequest } from './entities/money-request.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { PinoLogger } from 'nestjs-pino';
-import {
-  GetMoneyRequestsQuery,
-  GetMoneyRequestsOutput,
-} from './dtos/get-money-requests.dto';
-import { MoneyRequestStatus, TransactionType } from '../common/types';
 import {
   UpdateMoneyRequestDto,
   UpdateMoneyRequestOutput,
 } from './dtos/update-money-request.dto';
-import * as _ from 'lodash';
+import { MoneyRequest } from './entities/money-request.entity';
 
 @Injectable()
 export class MoneyRequestService {
+  private readonly logger: Logger;
+
   constructor(
-    private readonly logger: PinoLogger,
-    @Inject(forwardRef(() => UserService))
-    private readonly userService: UserService,
-    @Inject(forwardRef(() => TransactionService))
-    private readonly transactionService: TransactionService,
-    private readonly walletService: WalletService,
     @InjectRepository(MoneyRequest)
     private readonly moneyRequestRepo: Repository<MoneyRequest>,
-  ) {}
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
+    private readonly transactionService: TransactionService,
+    @Inject(forwardRef(() => WalletService))
+    private readonly walletService: WalletService,
+  ) {
+    this.logger = new Logger(MoneyRequestService.name);
+  }
 
   async getById(id: number): Promise<MoneyRequest> {
     return this.moneyRequestRepo.findOne({
@@ -105,6 +109,36 @@ export class MoneyRequestService {
         ok: false,
         status: 500,
         error: "couldn't find the money requests made to other users",
+      };
+    }
+  }
+
+  async getMoneyRequestsBetweenTwoUser(
+    userId1: number,
+    userId2: number,
+  ): Promise<GetMoneyRequestsBetweenTwoUsersOuput> {
+    try {
+      const moneyRequests = await this.moneyRequestRepo
+        .createQueryBuilder('money_request')
+        .leftJoinAndSelect('money_request.requester', 'requester')
+        .leftJoinAndSelect('money_request.requestee', 'requestee')
+        .where('requester.id = :userId1', { userId1 })
+        .andWhere('requestee.id = :userId2', { userId2 })
+        .orWhere('requester.id = :userId2', { userId2 })
+        .andWhere('requestee.id = :userId1', { userId1 })
+        .getMany();
+
+      return {
+        ok: true,
+        status: 200,
+        moneyRequests,
+      };
+    } catch (e) {
+      this.logger.error(e.message);
+      return {
+        ok: true,
+        status: 500,
+        error: "couldn't get money requests between two users",
       };
     }
   }

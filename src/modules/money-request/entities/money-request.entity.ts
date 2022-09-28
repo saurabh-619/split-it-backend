@@ -1,5 +1,6 @@
-import { CoreEntity, MoneyRequestStatus } from '@common';
-import { User } from '@user';
+import { User } from './../../user/entities/User.entity';
+import { MoneyRequestStatus } from './../../common/types';
+import { CoreEntity } from './../../common/enitites/core.entity';
 import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
 
 @Entity('money_request')

@@ -1,19 +1,19 @@
-import { User } from '@user';
 import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
-import { MoneyRequestService } from './money-request.service';
+import { AuthUser } from '../auth/auth.user.decorator';
+import { User } from './../user/entities/User.entity';
 import {
-  SendMoneyRequestOutput,
-  SendMoneyRequestDto,
-} from './dtos/send-money-request.dto';
-import { AuthUser } from '@auth-user';
-import {
-  GetMoneyRequestsQuery,
   GetMoneyRequestsOutput,
+  GetMoneyRequestsQuery,
 } from './dtos/get-money-requests.dto';
+import {
+  SendMoneyRequestDto,
+  SendMoneyRequestOutput,
+} from './dtos/send-money-request.dto';
 import {
   UpdateMoneyRequestDto,
   UpdateMoneyRequestOutput,
 } from './dtos/update-money-request.dto';
+import { MoneyRequestService } from './money-request.service';
 
 @Controller('money-request')
 export class MoneyRequestController {

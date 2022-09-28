@@ -1,5 +1,6 @@
-import { User } from '@user';
-import { CoreOutput } from '@common';
+import { User } from './../entities/User.entity';
+import { CoreOutput } from './../../common/dtos/output.dto';
+
 import { IsNotEmpty } from 'class-validator';
 
 export class SearchQueryDto {
