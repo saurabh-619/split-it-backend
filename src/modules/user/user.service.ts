@@ -162,6 +162,7 @@ export class UserService {
       return {
         ok: true,
         status: 200,
+        friendRequestId: request ? request.id : undefined,
         isFriend: request
           ? request.status === FriendRequestStatus.ACCEPTED
           : false,

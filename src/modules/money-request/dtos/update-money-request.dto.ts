@@ -28,13 +28,13 @@ export class UpdateMoneyRequestDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(35, { message: 'description is too short' })
+  @MinLength(10, { message: 'description is too short' })
   @MaxLength(3000, { message: 'description is too long' })
   description?: string;
 
   @IsOptional()
   @IsString()
-  @MinLength(35, { message: 'requestee remark is too short' })
+  @MinLength(10, { message: 'requestee remark is too short' })
   @MaxLength(3000, { message: 'requestee remark is too long' })
   requesteeRemark?: string;
 
