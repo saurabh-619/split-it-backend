@@ -26,6 +26,16 @@ export class TransactionService {
     });
   }
 
+  getByMoneyRequestId(id: number): Promise<Transaction> {
+    return this.transactionRepo.findOne({
+      where: {
+        moneyRequest: {
+          id,
+        },
+      },
+    });
+  }
+
   getByIdWithRelations(id: number): Promise<Transaction> {
     return this.transactionRepo.findOne({
       where: { id },
@@ -57,6 +67,8 @@ export class TransactionService {
         .createQueryBuilder('transaction')
         .leftJoinAndSelect('transaction.from', 'from')
         .leftJoinAndSelect('transaction.to', 'to')
+        .leftJoinAndSelect('transaction.bill', 'bill')
+        .leftJoinAndSelect('transaction.moneyRequest', 'moneyRequest')
         .where('from.id = :id', { id: user.id })
         .andWhere('transaction.type = :type', { type })
         .andWhere('transaction.isComplete = :isComplete', {

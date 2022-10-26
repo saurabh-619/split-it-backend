@@ -9,7 +9,11 @@ export class GetMoneyRequestsQuery {
   status?: MoneyRequestStatus;
 }
 
+export interface MoneyRequestWithTransactionId extends MoneyRequest {
+  transactionId: number;
+}
+
 export class GetMoneyRequestsOutput extends CoreOutput {
   size?: number;
-  moneyRequests?: MoneyRequest[];
+  moneyRequests?: MoneyRequestWithTransactionId[];
 }

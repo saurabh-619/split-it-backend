@@ -17,6 +17,7 @@ import {
   PayTheSplitDto,
   PayTheSplitOutput,
 } from './interfaces/pay-the-split.dto';
+import { TransactionType } from '../common/types';
 
 @Injectable()
 export class BillService {
@@ -264,17 +265,38 @@ export class BillService {
         bill.fractionPaid = '1.0';
         bill.paidAmount = bill.total;
       } else {
-        bill.paidAmount = split;
-        bill.fractionPaid = (bill.paidAmount / bill.total).toFixed(4);
+        // only leader has paid the money
+        const leaderSplit = splits.find(
+          (split) => split.friendId === bill.leader.id,
+        );
+        if (leaderSplit !== undefined && leaderSplit.split) {
+          bill.paidAmount = leaderSplit.split;
+          bill.fractionPaid =
+            bill.paidAmount / bill.total < 1
+              ? (bill.paidAmount / bill.total).toFixed(4)
+              : '1.0';
+        }
       }
+
+      // create transaction for leader
+      await this.transactionService.insert({
+        amount: bill.total,
+        bill,
+        isComplete: true,
+        type: TransactionType.BILL,
+        from: user,
+        to: null,
+      });
 
       // create transactions for splits
       for (const splitIns of splits) {
         const splitUser = await this.userService.getUserById(splitIns.friendId);
+        const isComplete = isPaid ? isPaid : splitUser.id === bill.leader.id;
+
         await this.transactionService.insert({
           amount: isEqualSplit === true ? split : splitIns.split,
           bill,
-          isComplete: isPaid ?? bill.leader.id === user.id,
+          isComplete,
           to: bill.leader,
           from: splitUser,
         });

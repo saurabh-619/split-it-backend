@@ -76,6 +76,8 @@ export class FriendRequestService {
         .andWhere('requestee.id = :userId1', { userId1 })
         .getOne();
 
+      console.log({ request });
+
       return { ok: true, status: 200, request };
     } catch (e) {
       this.logger.error(e.message);
@@ -98,12 +100,41 @@ export class FriendRequestService {
         };
       }
 
-      const request = this.friendRequestRepo.create({
-        requester: requester,
-        requestee,
+      const request = await this.friendRequestRepo.findOne({
+        where: [
+          {
+            requestee: {
+              id: requesteeId,
+            },
+            requester: {
+              id: requester.id,
+            },
+          },
+          {
+            requestee: {
+              id: requester.id,
+            },
+            requester: {
+              id: requesteeId,
+            },
+          },
+        ],
+        relations: ['requester', 'requestee'],
       });
 
-      await this.friendRequestRepo.insert(request);
+      if (request !== null) {
+        request.status = FriendRequestStatus.PENDING;
+        request.requester = requester;
+        request.requestee = requestee;
+        await this.friendRequestRepo.save(request);
+      } else {
+        const newRequest = this.friendRequestRepo.create({
+          requester: requester,
+          requestee,
+        });
+
+        await this.friendRequestRepo.insert(newRequest);
+      }
 
       return {
         ok: true,
@@ -216,6 +247,9 @@ export class FriendRequestService {
         .leftJoinAndSelect('fr.requestee', 'requestee')
         .where('fr.requestee.id = :id', {
           id: user.id,
+        })
+        .andWhere('fr.status = :status', {
+          status: FriendRequestStatus.ACCEPTED,
         })
         .orWhere('fr.requester.id = :id', { id: user.id })
         .andWhere('fr.status = :status', {

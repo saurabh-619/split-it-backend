@@ -11,6 +11,7 @@ import { GetMoneyRequestsBetweenTwoUsersOuput } from './dtos/get-money-requests-
 import {
   GetMoneyRequestsOutput,
   GetMoneyRequestsQuery,
+  MoneyRequestWithTransactionId,
 } from './dtos/get-money-requests.dto';
 import {
   SendMoneyRequestDto,
@@ -58,13 +59,27 @@ export class MoneyRequestService {
     { status = MoneyRequestStatus.PENDING }: GetMoneyRequestsQuery,
   ): Promise<GetMoneyRequestsOutput> {
     try {
-      const moneyRequests = await this.moneyRequestRepo.find({
+      const moneyRequestsData = await this.moneyRequestRepo.find({
         where: {
           requestee: { id: user.id },
           status,
         },
         relations: ['requestee', 'requester'],
       });
+
+      const transactions = await Promise.all(
+        moneyRequestsData.map((moneyRequest) =>
+          this.transactionService.getByMoneyRequestId(moneyRequest.id),
+        ),
+      );
+
+      const moneyRequests = moneyRequestsData.map(
+        (moneyRequestData, idx) =>
+          <MoneyRequestWithTransactionId>{
+            ...moneyRequestData,
+            transactionId: transactions[idx].id,
+          },
+      );
 
       return {
         ok: true,
@@ -89,13 +104,27 @@ export class MoneyRequestService {
     { status = MoneyRequestStatus.PENDING }: GetMoneyRequestsQuery,
   ): Promise<GetMoneyRequestsOutput> {
     try {
-      const moneyRequests = await this.moneyRequestRepo.find({
+      const moneyRequestsData = await this.moneyRequestRepo.find({
         where: {
           requester: { id: user.id },
           status,
         },
         relations: ['requestee', 'requester'],
       });
+
+      const transactions = await Promise.all(
+        moneyRequestsData.map((moneyRequest) =>
+          this.transactionService.getByMoneyRequestId(moneyRequest.id),
+        ),
+      );
+
+      const moneyRequests = moneyRequestsData.map(
+        (moneyRequestData, idx) =>
+          <MoneyRequestWithTransactionId>{
+            ...moneyRequestData,
+            transactionId: transactions[idx].id,
+          },
+      );
 
       return {
         ok: true,
@@ -271,7 +300,7 @@ export class MoneyRequestService {
         };
       }
 
-      //transfer money if updates.status === 'paid'
+      // transfer money if updates.status === 'paid'
       if (updates.status && updates.status === MoneyRequestStatus.PAID) {
         const { ok, error: transferError } =
           await this.walletService.transferMoney(

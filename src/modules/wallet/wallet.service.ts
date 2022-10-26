@@ -111,7 +111,7 @@ export class WalletService {
         return {
           ok: false,
           status: 400,
-          error: "sender doesn't have enough balance in the wallet",
+          error: "you don't have enough balance in the wallet",
         };
       }
 

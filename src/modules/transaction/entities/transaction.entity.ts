@@ -34,8 +34,8 @@ export class Transaction extends CoreEntity {
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   from: User;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  to: User;
+  @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: true })
+  to?: User;
 
   @Column({ default: false })
   isComplete: boolean;

@@ -18,7 +18,7 @@ export class GenerateBillDto {
 
   @IsOptional()
   @IsBoolean()
-  isPaid?: boolean;
+  isPaid?: boolean = false;
 
   @IsOptional()
   @IsBoolean()
