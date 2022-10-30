@@ -76,8 +76,6 @@ export class FriendRequestService {
         .andWhere('requestee.id = :userId1', { userId1 })
         .getOne();
 
-      console.log({ request });
-
       return { ok: true, status: 200, request };
     } catch (e) {
       this.logger.error(e.message);

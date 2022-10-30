@@ -36,6 +36,17 @@ export class TransactionService {
     });
   }
 
+  getAllByBillId(id: number): Promise<Transaction[]> {
+    return this.transactionRepo.find({
+      where: {
+        bill: {
+          id,
+        },
+      },
+      relations: ['bill', 'moneyRequest', 'from', 'to'],
+    });
+  }
+
   getByIdWithRelations(id: number): Promise<Transaction> {
     return this.transactionRepo.findOne({
       where: { id },

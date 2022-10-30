@@ -1,23 +1,27 @@
-import { User } from './../user/entities/User.entity';
-import { PaginationQueryDto } from './../common/dtos/pagination.dto';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, UpdateResult } from 'typeorm';
+import { In, Not, Repository, UpdateResult } from 'typeorm';
+import { PaginationQueryDto } from './../common/dtos/pagination.dto';
 import { TransactionService } from './../transaction/transaction.service';
+import { User } from './../user/entities/User.entity';
 import { UserService } from './../user/user.service';
 import { WalletService } from './../wallet/wallet.service';
 import { AddFriendsDto } from './dtos/add-friends.dto';
 import { GenerateBillDto, GenerateBillOutput } from './dtos/generate-bill.dto';
-import { GetBillsOuput } from './dtos/get-bills.dto';
+import {
+  BillOuput,
+  FriendsWithPaymentInfo,
+  GetBillsOuput,
+} from './dtos/get-bills.dto';
 import { GetEntireByIdOutput } from './dtos/get-entire-by-id.dto';
 import { InsertBillDto, InsertBillOuput } from './dtos/insert-bill.dto';
 import { Bill } from './entities/bill.entity';
 
+import { TransactionType } from '../common/types';
 import {
   PayTheSplitDto,
   PayTheSplitOutput,
 } from './interfaces/pay-the-split.dto';
-import { TransactionType } from '../common/types';
 
 @Injectable()
 export class BillService {
@@ -79,7 +83,7 @@ export class BillService {
     try {
       const skip = (page - 1) * limit || 0;
 
-      const bills = await this.billRepo.find({
+      const bills = (await this.billRepo.find({
         where: {
           leader: { id: user.id },
         },
@@ -89,7 +93,40 @@ export class BillService {
         order: {
           createdAt: 'desc',
         },
-      });
+      })) as BillOuput[];
+
+      for (const bill of bills) {
+        const transactionsOnBill = await this.transactionService.getAllByBillId(
+          bill.id,
+        );
+
+        bill.leader = <FriendsWithPaymentInfo>{
+          ...bill.leader,
+          paymentInfo: {
+            amount:
+              transactionsOnBill.find(
+                (x) =>
+                  x.type === TransactionType.BILL &&
+                  x.from.id === bill.leader.id,
+              )?.amount ?? 0,
+            hasPaid: true,
+          },
+        };
+
+        bill.friends = bill.friends.map((friend) => {
+          const transaction = transactionsOnBill.find(
+            (x) => x.type !== TransactionType.BILL && x.from.id === friend.id,
+          );
+
+          return <FriendsWithPaymentInfo>{
+            ...friend,
+            paymentInfo: {
+              hasPaid: transaction.isComplete,
+              amount: transaction.amount,
+            },
+          };
+        }) as FriendsWithPaymentInfo[];
+      }
 
       return {
         ok: true,
@@ -115,19 +152,61 @@ export class BillService {
     try {
       const skip = (page - 1) * limit || 0;
 
-      const bills = await this.billRepo.find({
+      const billDocs = await this.billRepo.find({
         where: {
-          friends: {
-            id: user.id,
+          leader: {
+            id: Not(user.id),
           },
+          friends: { id: user.id },
         },
-        relations: ['leader', 'friends', 'billItems.friends', 'billItems.item'],
         skip,
         take: limit,
         order: {
           createdAt: 'desc',
         },
       });
+
+      const billIds = billDocs.map((x) => x.id);
+
+      const bills = (await this.billRepo.find({
+        where: {
+          id: In(billIds),
+        },
+        relations: ['leader', 'friends', 'billItems.friends', 'billItems.item'],
+      })) as BillOuput[];
+
+      for (const bill of bills) {
+        const transactionsOnBill = await this.transactionService.getAllByBillId(
+          bill.id,
+        );
+
+        bill.leader = <FriendsWithPaymentInfo>{
+          ...bill.leader,
+          paymentInfo: {
+            amount:
+              transactionsOnBill.find(
+                (x) =>
+                  x.type === TransactionType.BILL &&
+                  x.from.id === bill.leader.id,
+              )?.amount || 0,
+            hasPaid: true,
+          },
+        };
+
+        bill.friends = bill.friends.map((friend) => {
+          const transaction = transactionsOnBill.find(
+            (x) => x.type !== TransactionType.BILL && x.from.id === friend.id,
+          );
+
+          return <FriendsWithPaymentInfo>{
+            ...friend,
+            paymentInfo: {
+              hasPaid: transaction.isComplete,
+              amount: transaction.amount,
+            },
+          };
+        }) as FriendsWithPaymentInfo[];
+      }
 
       return {
         ok: true,
